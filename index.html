@@ -1,0 +1,1957 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apprendre les Bases du Script CMD - Version 0.9 (Enrichie)</title>
+    
+    <style>
+        /* --- Styles de Base et Variables --- */
+        :root {
+            --color-primary: #007bff;
+            --color-primary-dark: #0056b3;
+            --color-background-light: #f4f4f9;
+            --color-surface-light: white;
+            --color-text-light: #333;
+            --color-accent-light: #28a745;
+            --color-warning: #ffc107;
+            --color-danger: #dc3545;
+            --color-info: #17a2b8;
+            --color-code-bg-light: #eaf5ff;
+            --color-code-border-light: #b8daff;
+            --color-code-syntax-light: #f8f9fa;
+        }
+
+        /* --- Mode Sombre --- */
+        .dark-mode {
+            --color-primary: #4da6ff;
+            --color-primary-dark: #38c15a;
+            --color-background-light: #1a1a1a;
+            --color-surface-light: #252525;
+            --color-text-light: #e0e0e0;
+            --color-accent-light: #38c15a;
+            --color-warning: #ffd166;
+            --color-danger: #ff6b6b;
+            --color-info: #138496;
+            --color-code-bg-light: #303030;
+            --color-code-border-light: #444;
+            --color-code-syntax-light: #3a3a3a;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: var(--color-background-light);
+            color: var(--color-text-light);
+            transition: background-color 0.3s, color 0.3s;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .icon {
+            width: 24px;
+            height: 24px;
+            vertical-align: middle;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            transition: stroke 0.3s;
+        }
+        
+        h2 .icon {
+            margin-right: 10px;
+            width: 28px;
+            height: 28px;
+            color: var(--color-primary);
+        }
+
+        header {
+            background: var(--color-primary);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-bottom: 5px solid var(--color-primary-dark);
+            position: relative;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        #modeToggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            padding: 8px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.2s;
+            border: 1px solid rgba(255,255,255,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+        }
+
+        #modeToggle:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+            transform: scale(1.05);
+        }
+
+        main {
+            max-width: 1000px;
+            margin: 20px auto;
+            padding: 0 20px;
+            width: 100%;
+            box-sizing: border-box;
+            flex: 1; 
+        }
+
+        /* --- Tabs --- */
+        #tabs {
+            display: flex;
+            margin-bottom: -1px; 
+            width: 100%;
+            flex-wrap: wrap; 
+        }
+
+        .tab-button {
+            flex-grow: 1;
+            padding: 15px 10px;
+            cursor: pointer;
+            background: #e9ecef;
+            border: 1px solid #dee2e6;
+            border-bottom: none;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+            font-weight: 600;
+            transition: background 0.2s, color 0.2s;
+            text-align: center;
+            color: #6c757d;
+            font-size: 0.9em;
+        }
+
+        .tab-button:hover {
+            background: #dee2e6;
+            color: var(--color-primary-dark);
+        }
+
+        .tab-button.active {
+            background: var(--color-surface-light);
+            border-color: #dee2e6;
+            color: var(--color-primary);
+            border-bottom: 1px solid var(--color-surface-light); 
+        }
+        
+        .dark-mode .tab-button {
+            background: #2d2d2d;
+            border-color: #444;
+            color: #888;
+        }
+        .dark-mode .tab-button.active {
+            background: var(--color-surface-light);
+            color: var(--color-primary);
+            border-color: #444;
+            border-bottom: 1px solid var(--color-surface-light);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        .tab-content.active { display: block; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- Sections --- */
+        section {
+            background: var(--color-surface-light);
+            padding: 25px;
+            margin-bottom: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            border: 1px solid #dee2e6; 
+            border-top-left-radius: 0; 
+        }
+        .dark-mode section {
+            border-color: #444;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        h2 {
+            color: var(--color-primary);
+            border-bottom: 2px solid #f1f1f1;
+            padding-bottom: 12px;
+            margin-top: 0;
+            display: flex;
+            align-items: center;
+        }
+        .dark-mode h2 { border-bottom-color: #444; }
+
+        /* --- ACCUEIL (Hero + Grid) --- */
+        .hero-box {
+            background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+            color: white;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 20px rgba(0, 123, 255, 0.2);
+        }
+        
+        .hero-box h2 {
+            color: white;
+            border-bottom: none;
+            justify-content: center;
+            font-size: 1.8em;
+            margin-bottom: 10px;
+        }
+        
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .feature-card {
+            background: var(--color-code-bg-light);
+            border: 1px solid var(--color-code-border-light);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px rgba(0,0,0,0.08);
+            border-color: var(--color-primary);
+        }
+
+        .feature-card .icon-large {
+            width: 50px;
+            height: 50px;
+            color: var(--color-primary);
+            margin-bottom: 15px;
+            stroke-width: 1.5;
+        }
+
+        /* --- Catalogue --- */
+        #commandList {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .search-bar {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--color-code-border-light);
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 1em;
+            background: var(--color-surface-light);
+            color: var(--color-text-light);
+            box-sizing: border-box;
+        }
+        .search-bar:focus { outline: none; border-color: var(--color-primary); }
+
+        .command-tag {
+            background: #e9ecef;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Consolas', monospace;
+            color: #495057;
+            border: 1px solid transparent;
+            font-size: 0.95em;
+        }
+        .command-tag:hover {
+            background-color: var(--color-primary);
+            color: white;
+            transform: translateY(-2px);
+        }
+        .command-tag.danger { border-left: 3px solid var(--color-danger); }
+        .command-tag.modern { border-left: 3px solid var(--color-accent-light); }
+        .command-tag.admin { border-left: 3px solid var(--color-warning); }
+        
+        .dark-mode .command-tag { background: #333; color: #ccc; border-color: #444; }
+        .dark-mode .command-tag:hover { border-color: var(--color-primary); }
+
+        .details-box {
+            margin-top: 25px;
+            padding: 20px;
+            border-left: 5px solid var(--color-primary);
+            background-color: var(--color-code-bg-light);
+            border-radius: 4px;
+        }
+        
+        /* NEW: Styles pour les détails enrichis et les arguments */
+        .details-box .long-description {
+            margin-bottom: 15px;
+            line-height: 1.7;
+        }
+
+        .args-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            font-size: 0.95em;
+            background: var(--color-surface-light);
+        }
+        .args-table th, .args-table td {
+            border: 1px solid var(--color-code-border-light);
+            padding: 8px 12px;
+            text-align: left;
+        }
+        .args-table th {
+            background: rgba(0,0,0,0.05);
+            font-weight: 600;
+        }
+        .args-table code {
+            color: var(--color-primary-dark);
+            font-weight: bold;
+        }
+        .dark-mode .args-table { background: #2d2d2d; }
+        .dark-mode .args-table th, .dark-mode .args-table td { border-color: #444; }
+        .dark-mode .args-table th { background: rgba(255,255,255,0.05); }
+
+        .details-box pre {
+            background: var(--color-code-syntax-light);
+            padding: 15px;
+            border-radius: 4px;
+            border: 1px solid rgba(0,0,0,0.05);
+            overflow-x: auto;
+        }
+        .dark-mode .details-box pre { color: var(--color-text-light); border-color: #444; }
+
+        /* --- Sandbox --- */
+        .sandbox-container { display: grid; grid-template-columns: 1.5fr 1fr; gap: 20px; height: 500px; }
+        @media (max-width: 768px) { .sandbox-container { grid-template-columns: 1fr; height: auto; } }
+
+        .terminal-window {
+            background: #1e1e1e;
+            color: #ccc;
+            border-radius: 6px;
+            padding: 10px;
+            font-family: 'Consolas', monospace;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid #333;
+        }
+        .terminal-output { flex: 1; overflow-y: auto; white-space: pre-wrap; padding-bottom: 10px; }
+        .terminal-input-line { display: flex; align-items: center; border-top: 1px solid #333; padding-top: 10px; }
+        .prompt-label { color: #ccc; margin-right: 5px; }
+        #sandboxInput, #missionInput { background: transparent; border: none; color: white; flex: 1; font-family: inherit; font-size: 1em; outline: none; }
+        
+        .file-explorer {
+            background: var(--color-surface-light);
+            border: 1px solid var(--color-code-border-light);
+            border-radius: 6px;
+            padding: 10px;
+            overflow-y: auto;
+        }
+        .file-item { padding: 5px; display: flex; align-items: center; cursor: pointer; border-radius: 4px; }
+        .file-item:hover { background: rgba(0,0,0,0.05); }
+
+        /* --- Missions --- */
+        .mission-step { margin-bottom: 15px; padding: 15px; border-left: 3px solid var(--color-warning); background: var(--color-code-bg-light); border-radius: 4px; }
+        .mission-status { float: right; font-weight: bold; }
+        .status-todo { color: #999; }
+        .status-done { color: var(--color-accent-light); }
+
+        /* --- Snippets --- */
+        .snippet-card { 
+            background: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 6px; 
+            margin-bottom: 15px; font-family: 'Consolas', monospace; position: relative; 
+            border: 1px solid #444;
+        }
+        /* NEW: Style description snippet */
+        .snippet-desc {
+            font-family: 'Segoe UI', sans-serif;
+            color: #ccc;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+            border-bottom: 1px solid #444;
+            padding-bottom: 8px;
+        }
+        .copy-btn { 
+            position: absolute; top: 10px; right: 10px; 
+            background: rgba(255,255,255,0.2); border: none; color: white; 
+            padding: 5px 10px; border-radius: 4px; font-size: 0.8em; cursor: pointer;
+        }
+
+        /* --- QCM & Création --- */
+        .code-block {
+            background: #2d2d2d; color: #76ff03; padding: 15px; border-radius: 5px; margin-bottom: 15px;
+            font-family: 'Consolas', monospace; white-space: pre-wrap; font-size: 1.1em; border: 1px solid #444;
+        }
+        #quizOptions label {
+            display: block; padding: 12px 15px; margin-bottom: 8px; background: var(--color-code-bg-light);
+            border-radius: 6px; cursor: pointer; transition: background 0.2s; border: 1px solid transparent;
+        }
+        #quizOptions label:hover { background: #ddeeff; }
+        .dark-mode #quizOptions label { background: #333; }
+        .dark-mode #quizOptions label:hover { background: #444; }
+
+        #creationAnswer {
+            width: 100%; height: 100px; padding: 15px; box-sizing: border-box; font-family: 'Consolas', monospace;
+            font-size: 1em; border: 2px solid #ccc; border-radius: 6px; margin-bottom: 15px;
+            background: var(--color-surface-light); color: var(--color-text-light);
+        }
+
+        /* --- Footer --- */
+        footer {
+            text-align: center;
+            padding: 40px 20px;
+            font-size: 0.9em;
+            color: #6c757d;
+            border-top: 1px solid #dee2e6;
+            margin-top: auto; 
+            background-color: var(--color-surface-light);
+        }
+        .dark-mode footer { color: #888; border-top-color: #333; background-color: #1e1e1e; }
+        footer img { margin-bottom: 15px; opacity: 0.8; transition: opacity 0.2s; }
+        footer img:hover { opacity: 1; }
+        footer a { color: var(--color-primary); text-decoration: none; }
+
+        /* --- Utilitaires --- */
+        .hidden { display: none !important; }
+        .btn-container { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px; }
+
+        button.action-btn {
+            background-color: var(--color-accent-light); color: white; border: none; padding: 12px 24px;
+            border-radius: 6px; cursor: pointer; font-size: 1em; font-weight: 600;
+            display: inline-flex; align-items: center; gap: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        button.action-btn.secondary { background-color: var(--color-info); }
+        button.action-btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
+        
+        .feedback-box { margin-top: 25px; padding: 20px; border-radius: 6px; background: var(--color-code-bg-light); }
+        .result-message { font-size: 1.2em; font-weight: bold; margin-bottom: 15px; }
+        .result-message.success { color: #28a745; }
+        .result-message.error { color: #dc3545; }
+        .result-message.info { color: var(--color-info); }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Apprenez le Script Batch CMD</h1>
+        <p>Automatisez vos tâches Windows : Catalogue, Missions, Scripts et Simulations (v0.9)</p>
+        
+        <button id="modeToggle" title="Changer le thème">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+        </button>
+    </header>
+
+    <main>
+        <div id="tabs">
+            <button class="tab-button active" data-tab="home">Accueil</button>
+            <button class="tab-button" data-tab="sandbox">Bac à Sable</button>
+            <button class="tab-button" data-tab="missions">Missions</button>
+            <button class="tab-button" data-tab="catalogue">Catalogue</button>
+            <button class="tab-button" data-tab="identifier">QCM</button>
+            <button class="tab-button" data-tab="creation">Création</button>
+            <button class="tab-button" data-tab="snippets">Snippets</button>
+        </div>
+        
+        <section id="home" class="tab-content active" style="background: transparent; border: none; box-shadow: none; padding: 0;">
+            <div class="hero-box">
+                <h2>
+                    <svg class="icon" viewBox="0 0 24 24" style="color:white; margin-right:10px;"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                    Bienvenue sur l'Outil d'Apprentissage CMD
+                </h2>
+                <p>La plateforme complète pour maîtriser l'invite de commande, avec missions scénarisées et bibliothèque de codes.</p>
+            </div>
+            
+            <div class="feature-grid">
+                <div class="feature-card" onclick="document.querySelector('[data-tab=catalogue]').click()">
+                    <svg class="icon icon-large" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+                    <h3>Catalogue Étendu</h3>
+                    <p>60 commandes référencées, avec explications détaillées et arguments.</p>
+                </div>
+                
+                <div class="feature-card" onclick="document.querySelector('[data-tab=missions]').click()">
+                    <svg class="icon icon-large" viewBox="0 0 24 24"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path></svg>
+                    <h3>Missions</h3>
+                    <p>Résolvez des scénarios complets (réparation, nettoyage) étape par étape.</p>
+                </div>
+
+                <div class="feature-card" onclick="document.querySelector('[data-tab=sandbox]').click()">
+                    <svg class="icon icon-large" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line></svg>
+                    <h3>Bac à Sable</h3>
+                    <p>Simulateur de terminal sécurisé pour pratiquer vos commandes.</p>
+                </div>
+
+                <div class="feature-card" onclick="document.querySelector('[data-tab=snippets]').click()">
+                    <svg class="icon icon-large" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+                    <h3>Snippets</h3>
+                    <p>Bibliothèque de scripts expliqués et prêts à l'emploi.</p>
+                </div>
+                
+                <div class="feature-card" onclick="document.querySelector('[data-tab=identifier]').click()">
+                    <svg class="icon icon-large" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    <h3>QCM & Identification</h3>
+                    <p>Questions aléatoires pour tester votre compréhension de code.</p>
+                </div>
+                
+                <div class="feature-card" onclick="document.querySelector('[data-tab=creation]').click()">
+                    <svg class="icon icon-large" viewBox="0 0 24 24"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+                    <h3>Création</h3>
+                    <p>Défis d'écriture aléatoires pour vous entraîner à scripter.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="sandbox" class="tab-content">
+            <h2>Bac à Sable (Simulateur)</h2>
+            <p>Commandes supportées : <code>MD</code> (Créer dossier), <code>CD</code> (Entrer/Sortir), <code>DEL</code> (Supprimer fichier), <code>RD</code> (Supprimer dossier), <code>DIR</code>, <code>ECHO</code>, <code>CLS</code>.</p>
+            <div class="sandbox-container">
+                <div class="terminal-window" id="terminalWindow">
+                    <div class="terminal-output" id="termOutput">Microsoft Windows [version 10.0.19045]<br>(c) Microsoft Corporation. Tous droits réservés.<br><br></div>
+                    <div class="terminal-input-line">
+                        <span class="prompt-label" id="termPrompt">C:\Users\Admin></span>
+                        <input type="text" id="sandboxInput" autocomplete="off" spellcheck="false" autofocus>
+                    </div>
+                </div>
+                <div class="file-explorer">
+                    <h3 style="margin-top:0; border-bottom:1px solid #ccc; padding-bottom:5px; font-size:1em;">Explorateur Visuel</h3>
+                    <div id="fileSystemView"></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="missions" class="tab-content">
+            <h2>Missions Scénarisées (Mode Aléatoire)</h2>
+            <div id="missionSelect">
+                <p>Prêt à relever un défi ? Lancez une mission générée aléatoirement.</p>
+                <button class="action-btn" onclick="startRandomMission()">🚀 Lancer une Mission</button>
+            </div>
+
+            <div id="missionActive" class="hidden">
+                <h3 id="missionTitle"></h3>
+                <p id="missionDesc" style="margin-bottom:20px; font-style: italic;"></p>
+                <div id="missionSteps"></div>
+                
+                <div class="terminal-window" style="height: 150px; margin-top:20px;">
+                    <div class="terminal-input-line">
+                        <span class="prompt-label">MISSION></span>
+                        <input type="text" id="missionInput" placeholder="Entrez la commande requise..." autocomplete="off">
+                    </div>
+                    <div id="missionFeedback" style="padding:10px; color:#aaa;"></div>
+                </div>
+                
+                <div class="btn-container">
+                    <button id="showMissionSol" class="action-btn secondary">Afficher la Solution</button>
+                    <button id="nextMissionBtn" class="action-btn hidden" onclick="startRandomMission()">Mission Suivante</button>
+                    <button onclick="exitMission()" class="action-btn" style="background:#666;">Quitter</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="catalogue" class="tab-content">
+            <h2>Catalogue des Commandes</h2>
+            <input type="text" id="searchCmd" class="search-bar" placeholder="Rechercher (ex: réseau, copie, ip)...">
+            <div id="commandList"></div>
+            <div id="commandDetails" class="details-box hidden">
+                <h3></h3>
+                <p class="description"></p>
+                
+                <div class="long-description"></div>
+                <h4>Arguments Principaux :</h4>
+                <div class="arguments-container"></div>
+                
+                <h4>Syntaxe :</h4>
+                <pre class="syntax"></pre>
+                <h4>Exemple :</h4>
+                <pre class="example"></pre>
+            </div>
+        </section>
+        
+        <section id="identifier" class="tab-content">
+            <h2>Identifier la Fonction (QCM)</h2>
+            <p>Question <span id="qcmCount">1</span> sur <span id="qcmTotal">25</span></p>
+            <div id="scriptCodeQCM" class="code-block"></div>
+            
+            <div id="quizOptions"></div>
+            
+            <div class="btn-container">
+                <button id="validateIdentification" class="action-btn">Valider</button>
+                <button id="showSolution" class="action-btn secondary">Afficher la Solution</button>
+                <button id="nextIdentification" class="action-btn hidden">Question Suivante</button>
+            </div>
+
+            <div id="identificationFeedback" class="feedback-box hidden">
+                <div class="result-message"></div>
+                <h3>Explication Détaillée :</h3>
+                <div id="explanationDetails"></div>
+            </div>
+        </section>
+
+        <section id="creation" class="tab-content">
+            <h2>Création de Script</h2>
+            <p id="creationTask" style="font-weight:bold; font-size:1.1em;"></p>
+            
+            <textarea id="creationAnswer" placeholder="Entrez votre commande ou script ici..."></textarea>
+            
+            <div class="btn-container">
+                <button id="validateCreation" class="action-btn">Valider le Script</button>
+                <button id="showCreationSolution" class="action-btn secondary">Afficher la Solution</button>
+                <button id="nextCreation" class="action-btn hidden">Script Suivant</button>
+            </div>
+            
+            <div id="creationFeedback" class="feedback-box hidden">
+                <div class="result-message"></div>
+                <h3>Solution Correcte :</h3>
+                <pre id="correctSolution"></pre>
+                <p id="solutionExplanation"></p>
+            </div>
+        </section>
+
+        <section id="snippets" class="tab-content">
+            <h2>Bibliothèque de Scripts</h2>
+            <p>Des scripts complets, documentés et prêts à copier-coller pour vos projets.</p>
+            <div id="snippetList"></div>
+        </section>
+
+    </main>
+
+    <footer>
+        <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">
+            <img alt="Licence Creative Commons" style="border-width:0" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png" />
+        </a><br />
+        <p>
+            "Outil d'apprentissage Script" par Valentin Prades (V.0.9 - Enrichie) est mis à disposition selon les termes de la 
+            <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="license">
+                licence Creative Commons Attribution - Pas d’Utilisation Commerciale - Partage dans les Mêmes Conditions 4.0 International
+            </a>.
+        </p>
+    </footer>
+
+    <script>
+        // --- 1. DONNÉES CATALOGUE ENRICHIES (60 COMMANDES AVEC ARGS ET DETAILS) ---
+        const commands = [
+            // Fichiers
+            { 
+                name: "DIR", 
+                category: "Fichiers", 
+                description: "Affiche le contenu d'un dossier.", 
+                longDesc: "La commande DIR est l'outil fondamental de navigation. Elle permet de lister les fichiers et sous-répertoires, d'afficher leur taille, leur date de modification et leurs attributs. Sans arguments, elle liste le dossier courant.",
+                args: [
+                    { flag: "/S", desc: "Liste les fichiers du dossier en cours et de tous les sous-dossiers (Récursif)." },
+                    { flag: "/A", desc: "Affiche les fichiers dotés d'attributs spécifiques (H: Cachés, S: Système...)." },
+                    { flag: "/B", desc: "Format minimal (Bare) : n'affiche que les noms de fichiers, sans en-tête ni taille." },
+                    { flag: "/O", desc: "Trie les fichiers (N: Nom, S: Taille, D: Date)." }
+                ],
+                syntax: "DIR [chemin] [/S] [/A] [/B]", 
+                example: "DIR C:\\Windows /S /O:S" 
+            },
+            { 
+                name: "CD", 
+                category: "Fichiers", 
+                description: "Change le dossier courant.", 
+                longDesc: "CD (Change Directory) permet de se déplacer dans l'arborescence des fichiers. C'est l'équivalent du double-clic sur un dossier dans l'explorateur Windows.",
+                args: [
+                    { flag: "..", desc: "Remonte au dossier parent." },
+                    { flag: "\\", desc: "Retourne directement à la racine du disque actuel." },
+                    { flag: "/D", desc: "Permet de changer de disque (ex: C: vers D:) et de dossier en même temps." }
+                ],
+                syntax: "CD [/D] [dossier]", 
+                example: "CD /D D:\\Jeux" 
+            },
+            { 
+                name: "MD", 
+                category: "Fichiers", 
+                description: "Crée un dossier.", 
+                longDesc: "MD (Make Directory) ou MKDIR crée un nouveau répertoire vide à l'emplacement spécifié.",
+                args: [
+                    { flag: "[nom]", desc: "Le nom du dossier à créer. S'il contient des espaces, utilisez des guillemets." }
+                ],
+                syntax: "MD [nom]", 
+                example: "MD \"Mon Dossier\"" 
+            },
+            { 
+                name: "RD", 
+                category: "Fichiers", 
+                description: "Supprime un dossier.", 
+                longDesc: "RD (Remove Directory) supprime un dossier. Par défaut, le dossier doit être vide pour être supprimé.",
+                args: [
+                    { flag: "/S", desc: "Supprime le dossier ET tout son contenu (fichiers et sous-dossiers)." },
+                    { flag: "/Q", desc: "Mode silencieux (Quiet) : ne demande pas de confirmation pour la suppression avec /S." }
+                ],
+                syntax: "RD [nom] [/S] [/Q]", 
+                example: "RD C:\\Temp /S /Q" 
+            },
+            { 
+                name: "DEL", 
+                category: "Fichiers", 
+                description: "Supprime un fichier.", 
+                longDesc: "DEL (Delete) ou ERASE supprime un ou plusieurs fichiers. Attention, les fichiers supprimés par CMD ne vont généralement pas dans la corbeille.",
+                args: [
+                    { flag: "/F", desc: "Force la suppression des fichiers en lecture seule." },
+                    { flag: "/S", desc: "Supprime les fichiers spécifiés dans tous les sous-dossiers." },
+                    { flag: "/Q", desc: "Mode silencieux (pas de confirmation)." }
+                ],
+                syntax: "DEL [fichier] [/F] [/S]", 
+                example: "DEL *.tmp /S /Q" 
+            },
+            { 
+                name: "COPY", 
+                category: "Fichiers", 
+                description: "Copie simple de fichiers.", 
+                longDesc: "Copie un ou plusieurs fichiers vers un autre emplacement. Pour copier des dossiers entiers, préférez XCOPY ou ROBOCOPY.",
+                args: [
+                    { flag: "/Y", desc: "Supprime la demande de confirmation avant d'écraser un fichier existant." },
+                    { flag: "/V", desc: "Vérifie que les nouveaux fichiers sont écrits correctement." }
+                ],
+                syntax: "COPY [source] [destination] [/Y]", 
+                example: "COPY rapport.txt D:\\Backup" 
+            },
+            { 
+                name: "XCOPY", 
+                category: "Fichiers", 
+                description: "Copie avancée (fichiers et arbres).", 
+                longDesc: "XCOPY est une version plus puissante de COPY, capable de gérer des arborescences de dossiers, des attributs et des dates.",
+                args: [
+                    { flag: "/S", desc: "Copie les répertoires et sous-répertoires (sauf vides)." },
+                    { flag: "/E", desc: "Copie tout, y compris les dossiers vides." },
+                    { flag: "/H", desc: "Copie aussi les fichiers cachés et système." },
+                    { flag: "/D", desc: "Ne copie que les fichiers modifiés plus récemment que ceux de la destination." }
+                ],
+                syntax: "XCOPY [src] [dst] /E /H", 
+                example: "XCOPY Data Backup /S /D" 
+            },
+            { 
+                name: "ROBOCOPY", 
+                category: "Fichiers", 
+                description: "Copie robuste pour sauvegardes.", 
+                longDesc: "L'outil ultime de copie sous Windows. Il gère la reprise après erreur, la mise en miroir, et conserve les permissions NTFS.",
+                args: [
+                    { flag: "/MIR", desc: "Miroir : Copie tout le contenu et SUPPRIME dans la destination ce qui n'est plus dans la source." },
+                    { flag: "/R:n", desc: "Nombre de tentatives en cas d'erreur (défaut : 1 million, conseillé : /R:0)." },
+                    { flag: "/W:n", desc: "Temps d'attente entre les tentatives (en secondes)." },
+                    { flag: "/MT", desc: "Copie multithread (plus rapide)." }
+                ],
+                syntax: "ROBOCOPY [src] [dst] /MIR /R:1 /W:1", 
+                example: "ROBOCOPY . D:\\Back /MIR" 
+            },
+            { 
+                name: "REN", 
+                category: "Fichiers", 
+                description: "Renomme un fichier ou dossier.", 
+                longDesc: "Permet de changer le nom ou l'extension d'un fichier. Accepte les caractères génériques (*).",
+                args: [
+                    { flag: "[ancien]", desc: "Nom actuel." },
+                    { flag: "[nouveau]", desc: "Nouveau nom." }
+                ],
+                syntax: "REN [ancien] [nouveau]", 
+                example: "REN *.txt *.bak" 
+            },
+            { 
+                name: "MOVE", 
+                category: "Fichiers", 
+                description: "Déplace un fichier.", 
+                longDesc: "Déplace des fichiers d'un dossier à un autre. Peut aussi servir à renommer des dossiers.",
+                args: [
+                    { flag: "/Y", desc: "Écrase sans confirmer si le fichier existe déjà à destination." }
+                ],
+                syntax: "MOVE [source] [destination]", 
+                example: "MOVE photos\\*.jpg C:\\Images" 
+            },
+            { 
+                name: "ATTRIB", 
+                category: "Fichiers", 
+                description: "Gère les attributs de fichiers.", 
+                longDesc: "Affiche ou modifie les attributs des fichiers (Lecture seule, Caché, Système, Archive).",
+                args: [
+                    { flag: "+R / -R", desc: "Active/Désactive la lecture seule." },
+                    { flag: "+H / -H", desc: "Active/Désactive l'attribut caché." },
+                    { flag: "+S / -S", desc: "Active/Désactive l'attribut système." }
+                ],
+                syntax: "ATTRIB +H [fichier]", 
+                example: "ATTRIB +R +H secret.txt" 
+            },
+            { 
+                name: "TYPE", 
+                category: "Fichiers", 
+                description: "Affiche le contenu texte.", 
+                longDesc: "Lit un fichier texte et affiche son contenu directement dans la console. Utile pour lire des logs.",
+                args: [],
+                syntax: "TYPE [fichier]", 
+                example: "TYPE journal.log" 
+            },
+            { 
+                name: "MORE", 
+                category: "Affichage", 
+                description: "Affiche page par page.", 
+                longDesc: "Permet de lire un long texte écran par écran. Appuyez sur Espace pour avancer.",
+                args: [],
+                syntax: "MORE [fichier] ou commande | MORE", 
+                example: "DIR C:\\Windows | MORE" 
+            },
+            { 
+                name: "FC", 
+                category: "Fichiers", 
+                description: "Compare deux fichiers.", 
+                longDesc: "File Compare : compare le contenu de deux fichiers et affiche les différences.",
+                args: [
+                    { flag: "/B", desc: "Comparaison binaire." },
+                    { flag: "/C", desc: "Ignore la casse (majuscule/minuscule)." }
+                ],
+                syntax: "FC [fichier1] [fichier2]", 
+                example: "FC v1.txt v2.txt" 
+            },
+            { 
+                name: "FIND", 
+                category: "Texte", 
+                description: "Cherche une chaîne de texte simple.", 
+                longDesc: "Recherche une chaîne de caractères spécifique dans un fichier ou dans la sortie d'une commande.",
+                args: [
+                    { flag: "/I", desc: "Ignore la casse." },
+                    { flag: "/C", desc: "Compte uniquement le nombre de lignes contenant la chaîne." },
+                    { flag: "/V", desc: "Affiche les lignes qui NE contiennent PAS la chaîne." }
+                ],
+                syntax: "FIND \"texte\" [fichier]", 
+                example: "DIR | FIND \"exe\"" 
+            },
+            { 
+                name: "FINDSTR", 
+                category: "Texte", 
+                description: "Recherche avancée (Regex).", 
+                longDesc: "Plus puissant que FIND, il supporte les expressions régulières pour des recherches complexes.",
+                args: [
+                    { flag: "/S", desc: "Recherche dans le dossier actuel et les sous-dossiers." },
+                    { flag: "/R", desc: "Utilise une expression régulière (Regex)." },
+                    { flag: "/I", desc: "Insensible à la casse." }
+                ],
+                syntax: "FINDSTR \"^Erreur\" log.txt", 
+                example: "FINDSTR /S \"TODO\" *.c" 
+            },
+            { 
+                name: "SORT", 
+                category: "Texte", 
+                description: "Trie les données.", 
+                longDesc: "Lit les données entrantes et les affiche triées par ordre alphabétique ou numérique.",
+                args: [
+                    { flag: "/R", desc: "Inverse l'ordre (décroissant)." }
+                ],
+                syntax: "SORT [fichier]", 
+                example: "SORT liste.txt /R" 
+            },
+            { 
+                name: "ASSOC", 
+                category: "Système", 
+                description: "Associations de fichiers.", 
+                longDesc: "Affiche ou modifie l'association entre une extension de fichier et un type de fichier.",
+                args: [
+                    { flag: ".ext", desc: "L'extension à vérifier." }
+                ],
+                syntax: "ASSOC .txt", 
+                example: "ASSOC .html=htmlfile" 
+            },
+            { 
+                name: "CIPHER", 
+                category: "Fichiers", 
+                description: "Chiffrement et nettoyage disque.", 
+                longDesc: "Outil de gestion du chiffrement EFS. Il possède aussi une fonction unique pour écraser l'espace libre.",
+                args: [
+                    { flag: "/E", desc: "Chiffre le dossier." },
+                    { flag: "/D", desc: "Déchiffre le dossier." },
+                    { flag: "/W:X", desc: "Nettoie (Wipe) l'espace libre du lecteur X en écrivant des données aléatoires." }
+                ],
+                syntax: "CIPHER /W:C:\\", 
+                example: "CIPHER /E DossierPrive" 
+            },
+            { 
+                name: "COMPACT", 
+                category: "Fichiers", 
+                description: "Compression NTFS.", 
+                longDesc: "Affiche ou modifie la compression des fichiers sur les partitions NTFS.",
+                args: [
+                    { flag: "/C", desc: "Compresse le fichier ou dossier." },
+                    { flag: "/U", desc: "Décompresse." },
+                    { flag: "/S", desc: "Effectue l'opération sur les sous-dossiers." }
+                ],
+                syntax: "COMPACT /C [fichier]", 
+                example: "COMPACT /C /S C:\\Data" 
+            },
+
+            // Réseau
+            { 
+                name: "PING", 
+                category: "Réseau", 
+                description: "Teste la connectivité.", 
+                longDesc: "Envoie des paquets ICMP (Echo Request) à une adresse IP ou un domaine pour vérifier s'il est accessible et mesurer le temps de réponse.",
+                args: [
+                    { flag: "-t", desc: "Ping continu jusqu'à arrêt manuel (Ctrl+C)." },
+                    { flag: "-n X", desc: "Envoie X paquets (défaut: 4)." },
+                    { flag: "-a", desc: "Résout l'adresse IP en nom d'hôte." }
+                ],
+                syntax: "PING [ip] [-t]", 
+                example: "PING 8.8.8.8 -t" 
+            },
+            { 
+                name: "IPCONFIG", 
+                category: "Réseau", 
+                description: "Configuration IP.", 
+                longDesc: "Affiche la configuration TCP/IP actuelle (Adresse IP, Masque, Passerelle) de toutes les cartes réseau.",
+                args: [
+                    { flag: "/ALL", desc: "Affiche toutes les infos détaillées (MAC, DNS, DHCP...)." },
+                    { flag: "/RELEASE", desc: "Libère l'adresse IP actuelle (déconnecte)." },
+                    { flag: "/RENEW", desc: "Demande une nouvelle adresse IP au serveur DHCP." },
+                    { flag: "/FLUSHDNS", desc: "Vide le cache de résolution DNS." }
+                ],
+                syntax: "IPCONFIG /ALL", 
+                example: "IPCONFIG /FLUSHDNS" 
+            },
+            { 
+                name: "TRACERT", 
+                category: "Réseau", 
+                description: "Trace la route IP.", 
+                longDesc: "Affiche le chemin (les routeurs) emprunté par les paquets pour atteindre une destination.",
+                args: [
+                    { flag: "-d", desc: "Ne résout pas les adresses IP en noms (plus rapide)." }
+                ],
+                syntax: "TRACERT [ip]", 
+                example: "TRACERT google.com" 
+            },
+            { 
+                name: "NETSTAT", 
+                category: "Réseau", 
+                description: "Statistiques réseau.", 
+                longDesc: "Affiche les connexions TCP/IP actives, les ports en écoute et les statistiques.",
+                args: [
+                    { flag: "-a", desc: "Affiche toutes les connexions et ports d'écoute." },
+                    { flag: "-n", desc: "Affiche les adresses et ports sous forme numérique (pas de résolution DNS)." },
+                    { flag: "-b", desc: "Affiche l'exécutable impliqué dans la connexion (Admin requis)." }
+                ],
+                syntax: "NETSTAT -an", 
+                example: "NETSTAT -ab" 
+            },
+            { 
+                name: "NSLOOKUP", 
+                category: "Réseau", 
+                description: "Résolution DNS.", 
+                longDesc: "Interroge les serveurs DNS pour trouver l'IP associée à un nom de domaine, ou l'inverse.",
+                args: [],
+                syntax: "NSLOOKUP [domaine]", 
+                example: "NSLOOKUP google.com" 
+            },
+            { 
+                name: "ARP", 
+                category: "Réseau", 
+                description: "Table de correspondance MAC/IP.", 
+                longDesc: "Affiche et modifie la table de conversion d'adresses IP en adresses physiques (MAC) utilisée par le protocole ARP.",
+                args: [
+                    { flag: "-a", desc: "Affiche les entrées ARP actuelles." },
+                    { flag: "-d", desc: "Supprime une entrée." }
+                ],
+                syntax: "ARP -a", 
+                example: "ARP -a" 
+            },
+            { 
+                name: "GETMAC", 
+                category: "Réseau", 
+                description: "Affiche l'adresse MAC.", 
+                longDesc: "Retourne l'adresse physique (MAC) et la liste des protocoles réseau pour toutes les cartes locales.",
+                args: [
+                    { flag: "/V", desc: "Mode verbeux : affiche le nom de la connexion." },
+                    { flag: "/FO LIST", desc: "Formate la sortie en liste." }
+                ],
+                syntax: "GETMAC /V", 
+                example: "GETMAC /FO LIST /V" 
+            },
+            { 
+                name: "NET USE", 
+                category: "Réseau", 
+                description: "Gère les lecteurs réseau.", 
+                longDesc: "Connecte un dossier partagé sur le réseau à une lettre de lecteur locale (ex: Z:).",
+                args: [
+                    { flag: "Z: \\\\Serv\\Partage", desc: "Monte le partage sur Z:." },
+                    { flag: "/PERSISTENT:YES", desc: "La connexion reste après redémarrage." },
+                    { flag: "/DELETE", desc: "Déconnecte le lecteur." }
+                ],
+                syntax: "NET USE [Lettre] [Chemin]", 
+                example: "NET USE Z: \\\\Serveur\\Docs" 
+            },
+            { 
+                name: "NETSH", 
+                category: "Réseau", 
+                description: "Configuration réseau avancée.", 
+                longDesc: "Le couteau suisse du réseau : permet de configurer l'IP, le DNS, le pare-feu, le Wi-Fi, etc.",
+                args: [
+                    { flag: "interface ip...", desc: "Configure l'IP." },
+                    { flag: "wlan show profiles", desc: "Affiche les Wi-Fi connus." },
+                    { flag: "advfirewall...", desc: "Configure le pare-feu." }
+                ],
+                syntax: "NETSH [contexte] [commande]", 
+                example: "NETSH WLAN SHOW PROFILES" 
+            },
+            { 
+                name: "HOSTNAME", 
+                category: "Réseau", 
+                description: "Nom de l'ordinateur.", 
+                longDesc: "Affiche simplement le nom réseau de la machine actuelle.",
+                args: [],
+                syntax: "HOSTNAME", 
+                example: "HOSTNAME" 
+            },
+            { 
+                name: "CURL", 
+                category: "Moderne", 
+                description: "Transfert de données URL.", 
+                longDesc: "Outil puissant (intégré dans Windows 10+) pour effectuer des requêtes HTTP/HTTPS, télécharger des fichiers ou interagir avec des API.",
+                args: [
+                    { flag: "-O", desc: "Enregistre la sortie dans un fichier local." },
+                    { flag: "-I", desc: "Affiche seulement les en-têtes HTTP." }
+                ],
+                syntax: "CURL [url]", 
+                example: "CURL http://google.com" 
+            },
+            { 
+                name: "SSH", 
+                category: "Moderne", 
+                description: "Client Secure Shell.", 
+                longDesc: "Client OpenSSH (Windows 10+) pour se connecter de manière sécurisée à des serveurs distants (souvent Linux).",
+                args: [
+                    { flag: "-p [port]", desc: "Spécifie le port (défaut 22)." }
+                ],
+                syntax: "SSH user@host", 
+                example: "SSH root@192.168.1.50" 
+            },
+
+            // Système & Admin
+            { 
+                name: "CLS", 
+                category: "Système", 
+                description: "Efface l'écran.", 
+                longDesc: "Vide l'affichage de la console. L'historique des commandes reste accessible via les flèches haut/bas.",
+                args: [],
+                syntax: "CLS", 
+                example: "CLS" 
+            },
+            { 
+                name: "ECHO", 
+                category: "Système", 
+                description: "Affiche un message.", 
+                longDesc: "Affiche du texte à l'écran ou active/désactive l'affichage des commandes dans un script.",
+                args: [
+                    { flag: "ON / OFF", desc: "Active/Désactive l'écho des commandes." },
+                    { flag: "Message", desc: "Le texte à afficher." }
+                ],
+                syntax: "ECHO [texte]", 
+                example: "ECHO Bonjour > fichier.txt" 
+            },
+            { 
+                name: "TASKLIST", 
+                category: "Processus", 
+                description: "Liste les processus.", 
+                longDesc: "Affiche la liste des applications et services en cours d'exécution avec leur PID (Process ID) et utilisation mémoire.",
+                args: [
+                    { flag: "/V", desc: "Mode détaillé (Verbose)." },
+                    { flag: "/FI", desc: "Filtre les résultats (ex: par statut)." }
+                ],
+                syntax: "TASKLIST [/V]", 
+                example: "TASKLIST /FI \"STATUS eq RUNNING\"" 
+            },
+            { 
+                name: "TASKKILL", 
+                category: "Processus", 
+                description: "Arrête un processus.", 
+                longDesc: "Met fin à une ou plusieurs tâches ou processus. Peut tuer par nom ou par ID (PID).",
+                args: [
+                    { flag: "/IM [nom]", desc: "Image Name : tue par nom de processus (ex: notepad.exe)." },
+                    { flag: "/PID [id]", desc: "Tue par numéro d'identifiant unique." },
+                    { flag: "/F", desc: "Force l'arrêt brutale." }
+                ],
+                syntax: "TASKKILL /F /IM [nom]", 
+                example: "TASKKILL /F /IM chrome.exe" 
+            },
+            { 
+                name: "SHUTDOWN", 
+                category: "Système", 
+                description: "Arrêt/Redémarrage.", 
+                longDesc: "Permet d'éteindre, redémarrer ou mettre en veille l'ordinateur, localement ou à distance.",
+                args: [
+                    { flag: "/S", desc: "Éteint l'ordinateur." },
+                    { flag: "/R", desc: "Redémarre l'ordinateur." },
+                    { flag: "/T xxx", desc: "Définit le délai en secondes avant l'action." },
+                    { flag: "/A", desc: "Annule (Abort) un arrêt planifié." }
+                ],
+                syntax: "SHUTDOWN /S /T 0", 
+                example: "SHUTDOWN /R /T 60" 
+            },
+            { 
+                name: "SYSTEMINFO", 
+                category: "Système", 
+                description: "Infos système détaillées.", 
+                longDesc: "Affiche une configuration complète du système : OS, RAM, BIOS, Réseau, correctifs installés, temps de démarrage, etc.",
+                args: [],
+                syntax: "SYSTEMINFO", 
+                example: "SYSTEMINFO | FIND \"Mémoire\"" 
+            },
+            { 
+                name: "SFC", 
+                category: "Admin", 
+                description: "Vérification fichiers système.", 
+                longDesc: "System File Checker : Analyse l'intégrité de tous les fichiers système protégés et remplace les versions incorrectes par les versions Microsoft correctes.",
+                args: [
+                    { flag: "/SCANNOW", desc: "Analyse immédiate et réparation." },
+                    { flag: "/VERIFYONLY", desc: "Analyse sans réparer." }
+                ],
+                syntax: "SFC /SCANNOW", 
+                example: "SFC /SCANNOW" 
+            },
+            { 
+                name: "DISM", 
+                category: "Admin", 
+                description: "Gestion image Windows.", 
+                longDesc: "Deployment Image Servicing and Management. Utilisé pour réparer l'image système Windows quand SFC échoue.",
+                args: [
+                    { flag: "/Online", desc: "Cible le système actuel." },
+                    { flag: "/Cleanup-Image", desc: "Opération de nettoyage/réparation." },
+                    { flag: "/RestoreHealth", desc: "Télécharge les fichiers sains et répare l'image." }
+                ],
+                syntax: "DISM /Online /Cleanup-Image /RestoreHealth", 
+                example: "DISM /Online /Cleanup-Image /ScanHealth" 
+            },
+            { 
+                name: "CHKDSK", 
+                category: "Admin", 
+                description: "Vérification disque.", 
+                longDesc: "Vérifie le système de fichiers et les métadonnées du système de fichiers d'un volume pour rechercher des erreurs logiques ou physiques.",
+                args: [
+                    { flag: "/F", desc: "Fix : Corrige les erreurs détectées." },
+                    { flag: "/R", desc: "Recover : Localise les secteurs défectueux et récupère les informations lisibles (implique /F)." }
+                ],
+                syntax: "CHKDSK [lettre]: /F", 
+                example: "CHKDSK C: /F /R" 
+            },
+            { 
+                name: "FORMAT", 
+                category: "Admin", 
+                description: "Formater un volume.", 
+                longDesc: "Formate un disque pour accepter les fichiers Windows. ATTENTION : Efface toutes les données du disque cible.",
+                args: [
+                    { flag: "/Q", desc: "Formatage rapide." },
+                    { flag: "/FS:ntfs", desc: "Spécifie le système de fichiers (ex: NTFS, FAT32)." }
+                ],
+                syntax: "FORMAT [drive] /Q", 
+                example: "FORMAT D: /Q /FS:NTFS" 
+            },
+            { 
+                name: "GPUPDATE", 
+                category: "Admin", 
+                description: "Màj stratégies de groupe.", 
+                longDesc: "Force la mise à jour des paramètres de stratégie de groupe (GPO) locaux et Active Directory.",
+                args: [
+                    { flag: "/FORCE", desc: "Réapplique tous les paramètres, même s'ils n'ont pas changé." }
+                ],
+                syntax: "GPUPDATE /FORCE", 
+                example: "GPUPDATE /FORCE" 
+            },
+            { 
+                name: "GPRESULT", 
+                category: "Admin", 
+                description: "Résultat GPO appliquées.", 
+                longDesc: "Affiche l'ensemble de stratégies de groupe (RSoP) appliqué à l'ordinateur et à l'utilisateur.",
+                args: [
+                    { flag: "/R", desc: "Affiche un résumé des données." },
+                    { flag: "/H [fich]", desc: "Génère un rapport HTML détaillé." }
+                ],
+                syntax: "GPRESULT /R", 
+                example: "GPRESULT /H report.html" 
+            },
+            { 
+                name: "SC", 
+                category: "Admin", 
+                description: "Gestion des services.", 
+                longDesc: "Outil en ligne de commande pour communiquer avec le gestionnaire de contrôle des services et les services.",
+                args: [
+                    { flag: "START", desc: "Démarre un service." },
+                    { flag: "STOP", desc: "Arrête un service." },
+                    { flag: "QUERY", desc: "Obtient le statut d'un service." },
+                    { flag: "CONFIG", desc: "Modifie la configuration (ex: type de démarrage)." }
+                ],
+                syntax: "SC [commande] [nom_service]", 
+                example: "SC STOP wuauserv" 
+            },
+            { 
+                name: "REG", 
+                category: "Admin", 
+                description: "Registre Windows.", 
+                longDesc: "Permet de lire, ajouter, modifier ou supprimer des clés et valeurs dans la base de registre.",
+                args: [
+                    { flag: "QUERY", desc: "Affiche le contenu d'une clé." },
+                    { flag: "ADD", desc: "Ajoute une nouvelle clé ou valeur." },
+                    { flag: "DELETE", desc: "Supprime une clé ou valeur." }
+                ],
+                syntax: "REG QUERY [clé]", 
+                example: "REG ADD HKLM\\Software\\Test /v Val /d 1" 
+            },
+            { 
+                name: "SCHTASKS", 
+                category: "Admin", 
+                description: "Tâches planifiées.", 
+                longDesc: "Permet à l'administrateur de créer, supprimer, interroger, modifier, exécuter et mettre fin à des tâches planifiées sur un système local ou distant.",
+                args: [
+                    { flag: "/CREATE", desc: "Crée une nouvelle tâche." },
+                    { flag: "/DELETE", desc: "Supprime une tâche." },
+                    { flag: "/RUN", desc: "Lance une tâche immédiatement." }
+                ],
+                syntax: "SCHTASKS /Query", 
+                example: "SCHTASKS /Run /TN \"Backup\"" 
+            },
+            { 
+                name: "POWERCFG", 
+                category: "Admin", 
+                description: "Gestion énergie.", 
+                longDesc: "Contrôle les paramètres d'alimentation, la mise en veille et l'analyse de la batterie.",
+                args: [
+                    { flag: "/HIBERNATE", desc: "Active/Désactive la mise en veille prolongée." },
+                    { flag: "/BATTERYREPORT", desc: "Génère un rapport HTML sur l'état de la batterie." }
+                ],
+                syntax: "POWERCFG /HIBERNATE ON", 
+                example: "POWERCFG /BATTERYREPORT" 
+            },
+            { 
+                name: "DRIVERQUERY", 
+                category: "Admin", 
+                description: "Liste les pilotes.", 
+                longDesc: "Affiche une liste de tous les pilotes de périphériques installés et leurs propriétés.",
+                args: [
+                    { flag: "/V", desc: "Affiche des informations détaillées (état, emplacement...)." }
+                ],
+                syntax: "DRIVERQUERY", 
+                example: "DRIVERQUERY /V" 
+            },
+            { 
+                name: "WHOAMI", 
+                category: "Système", 
+                description: "Utilisateur actuel.", 
+                longDesc: "Affiche les informations sur l'utilisateur, le groupe et les privilèges de la session courante.",
+                args: [
+                    { flag: "/GROUPS", desc: "Liste les groupes auxquels l'utilisateur appartient." },
+                    { flag: "/PRIV", desc: "Affiche les privilèges de sécurité de l'utilisateur." }
+                ],
+                syntax: "WHOAMI", 
+                example: "WHOAMI /GROUPS" 
+            },
+            { 
+                name: "SET", 
+                category: "Système", 
+                description: "Variables d'environnement.", 
+                longDesc: "Affiche, définit ou supprime des variables d'environnement cmd.exe.",
+                args: [
+                    { flag: "var=valeur", desc: "Définit la variable." },
+                    { flag: "/A", desc: "Traite la valeur comme une expression arithmétique (calcul)." },
+                    { flag: "/P", desc: "Demande une saisie utilisateur." }
+                ],
+                syntax: "SET variable=valeur", 
+                example: "SET /A calcul=2+2" 
+            },
+            { 
+                name: "VER", 
+                category: "Système", 
+                description: "Version de Windows.", 
+                longDesc: "Affiche le numéro de version exact du système d'exploitation.",
+                args: [],
+                syntax: "VER", 
+                example: "VER" 
+            },
+            
+            // Scripting & Divers
+            { 
+                name: "IF", 
+                category: "Logique", 
+                description: "Conditionnelle.", 
+                longDesc: "Exécute un traitement conditionnel dans les programmes de traitement par lots.",
+                args: [
+                    { flag: "EXIST [fich]", desc: "Vrai si le fichier existe." },
+                    { flag: "str1==str2", desc: "Vrai si les chaînes sont identiques." },
+                    { flag: "/I", desc: "Comparaison insensible à la casse." }
+                ],
+                syntax: "IF [cond] (cmd) ELSE (cmd)", 
+                example: "IF EXIST a.txt DEL a.txt" 
+            },
+            { 
+                name: "FOR", 
+                category: "Logique", 
+                description: "Boucle.", 
+                longDesc: "Exécute une commande pour chaque fichier d'un ensemble de fichiers, ou selon une séquence de nombres.",
+                args: [
+                    { flag: "%v IN (set)", desc: "Variable et ensemble à parcourir." },
+                    { flag: "/L", desc: "Boucle numérique (Début, Pas, Fin)." },
+                    { flag: "/R", desc: "Récursif (parcourt les sous-dossiers)." },
+                    { flag: "/F", desc: "Analyse de fichiers ou de chaînes (Tokens)." }
+                ],
+                syntax: "FOR %v IN (set) DO cmd", 
+                example: "FOR /L %i IN (1,1,10) DO ECHO %i" 
+            },
+            { 
+                name: "GOTO", 
+                category: "Logique", 
+                description: "Saut vers label.", 
+                longDesc: "Dirige cmd.exe vers une ligne étiquetée dans le programme de commandes. L'étiquette doit commencer par deux points (:).",
+                args: [
+                    { flag: ":Label", desc: "Le nom du point de repère." }
+                ],
+                syntax: "GOTO Label", 
+                example: "GOTO Fin" 
+            },
+            { 
+                name: "CALL", 
+                category: "Logique", 
+                description: "Appelle un autre script.", 
+                longDesc: "Appelle un programme de commandes à partir d'un autre sans arrêter le programme appelant.",
+                args: [
+                    { flag: ":Label", desc: "Appelle une sous-routine locale dans le même fichier." }
+                ],
+                syntax: "CALL script.bat", 
+                example: "CALL :MaFonction" 
+            },
+            { 
+                name: "PAUSE", 
+                category: "Logique", 
+                description: "Attend une touche.", 
+                longDesc: "Suspend l'exécution du script et affiche 'Appuyez sur une touche pour continuer...'.",
+                args: [],
+                syntax: "PAUSE", 
+                example: "PAUSE" 
+            },
+            { 
+                name: "TIMEOUT", 
+                category: "Logique", 
+                description: "Attend N secondes.", 
+                longDesc: "Suspend le processeur de commandes pendant un nombre de secondes spécifié.",
+                args: [
+                    { flag: "/T n", desc: "Nombre de secondes à attendre." },
+                    { flag: "/NOBREAK", desc: "Ignore les touches (sauf CTRL+C)." }
+                ],
+                syntax: "TIMEOUT /T 10", 
+                example: "TIMEOUT 5 /NOBREAK" 
+            },
+            { 
+                name: "CHOICE", 
+                category: "Logique", 
+                description: "Menu choix utilisateur.", 
+                longDesc: "Invite l'utilisateur à faire un choix parmi une liste de caractères. Renvoie un code d'erreur (ErrorLevel) correspondant au choix.",
+                args: [
+                    { flag: "/C xyz", desc: "Définit les touches autorisées (ex: ON)." },
+                    { flag: "/M \"msg\"", desc: "Message à afficher." },
+                    { flag: "/T n /D x", desc: "Choix par défaut (x) après n secondes." }
+                ],
+                syntax: "CHOICE /C YN /M \"Oui ou Non\"", 
+                example: "CHOICE /C YN" 
+            },
+            { 
+                name: "TAR", 
+                category: "Moderne", 
+                description: "Archives (Zip/Tar).", 
+                longDesc: "Outil natif (Win10+) pour créer et extraire des archives (.zip, .tar, .gz).",
+                args: [
+                    { flag: "-c", desc: "Create : Créer une archive." },
+                    { flag: "-x", desc: "Extract : Extraire une archive." },
+                    { flag: "-f", desc: "File : Spécifie le nom du fichier archive." },
+                    { flag: "-v", desc: "Verbose : Affiche les détails." }
+                ],
+                syntax: "TAR -xf archive.zip", 
+                example: "TAR -cf data.zip dossier" 
+            }
+        ];
+
+        // --- 2. DONNÉES QCM (INCHANGÉES MAIS REPRISES POUR INTÉGRITÉ) ---
+        const qcmData = [
+            { script: ['@ECHO OFF', 'CLS', 'TITLE Backup'], options: ["Change le titre.", "Supprime tout.", "Copie des fichiers.", "Affiche l'heure."], correct: 0, expl: "La commande **TITLE** permet de modifier le texte affiché dans la barre supérieure de la fenêtre de commandes. C'est utile pour identifier ce que fait votre script en cours d'exécution." },
+            { script: ['RD C:\\Temp /S /Q'], options: ["Renomme Temp.", "Supprime Temp et sous-dossiers silencieusement.", "Crée Temp.", "Liste Temp."], correct: 1, expl: "**RD** signifie *Remove Directory*. L'option **/S** permet de supprimer toute l'arborescence (sous-dossiers inclus) et **/Q** (Quiet) le fait sans demander de confirmation à l'utilisateur." },
+            { script: ['PING 127.0.0.1'], options: ["Teste la carte réseau locale (loopback).", "Pirate Google.", "Affiche l'IP.", "Supprime l'IP."], correct: 0, expl: "L'adresse **127.0.0.1** est l'adresse de boucle locale (*localhost*). Faire un ping dessus permet de vérifier que votre propre carte réseau et la couche TCP/IP sont correctement installées." },
+            { script: ['IPCONFIG /FLUSHDNS'], options: ["Vide le cache DNS.", "Change l'IP.", "Affiche les DNS.", "Teste le DNS."], correct: 0, expl: "Windows garde en mémoire les adresses IP des sites visités (Cache DNS). **/FLUSHDNS** vide cette mémoire. C'est très utile si un site a changé d'IP et que vous n'arrivez plus à y accéder." },
+            { script: ['SHUTDOWN /A'], options: ["Arrête le PC.", "Annule un arrêt programmé.", "Allume le PC.", "Met en veille."], correct: 1, expl: "L'option **/A** signifie *Abort* (Annuler). Elle permet de stopper un compte à rebours d'extinction lancé précédemment (par exemple avec `shutdown /s /t 60`)." },
+            { script: ['TASKKILL /F /IM chrome.exe'], options: ["Lance Chrome.", "Ferme Chrome de force.", "Met à jour Chrome.", "Désinstalle Chrome."], correct: 1, expl: "**TASKKILL** tue une tâche. **/F** force la fermeture (utile si le programme est planté) et **/IM** permet de cibler par le nom de l'image (Image Name), ici *chrome.exe*." },
+            { script: ['NET USER Admin 1234 /ADD'], options: ["Connecte Admin.", "Crée l'utilisateur Admin avec mdp 1234.", "Supprime Admin.", "Change le mdp."], correct: 1, expl: "**NET USER** est la commande de gestion des utilisateurs. **/ADD** indique qu'on souhaite ajouter un nouveau compte. Les arguments sont : `[Nom] [MotDePasse] /ADD`." },
+            { script: ['DIR *.txt /S > liste.txt'], options: ["Affiche les txt.", "Liste tous les txt du disque dans un fichier.", "Supprime les txt.", "Copie les txt."], correct: 1, expl: "**DIR** liste les fichiers. **/S** cherche dans le dossier actuel ET les sous-dossiers. Le symbole **>** redirige le résultat, qui s'afficherait normalement à l'écran, pour l'écrire dans le fichier *liste.txt*." },
+            { script: ['IF EXIST data.log DEL data.log'], options: ["Supprime data.log s'il existe.", "Crée data.log.", "Renomme data.log.", "Copie data.log."], correct: 0, expl: "C'est une structure conditionnelle classique. **IF EXIST** vérifie la présence du fichier. Si la condition est vraie, la commande suivante (**DEL** pour supprimer) est exécutée." },
+            { script: ['FOR %i IN (1,1,10) DO ECHO %i'], options: ["Affiche 1 et 10.", "Compte de 1 à 10.", "Crée 10 fichiers.", "Attend 10s."], correct: 1, expl: "C'est une boucle numérique. La syntaxe `(1,1,10)` signifie : Commencer à **1**, avancer par pas de **1**, s'arrêter à **10**. La commande **ECHO** affichera donc chaque chiffre successivement." },
+            { script: ['SET /A result=5+5'], options: ["Affiche 5+5.", "Stocke 10 dans la variable result.", "Erreur.", "Crée un fichier result."], correct: 1, expl: "La commande **SET** définit une variable. L'option **/A** est cruciale car elle indique qu'il s'agit d'une opération **Arithmétique**. Sans cela, la variable contiendrait le texte littéral '5+5'." },
+            { script: ['ATTRIB +H secret.doc'], options: ["Cache le fichier.", "Supprime le fichier.", "Ouvre le fichier.", "Verrouille le fichier."], correct: 0, expl: "**ATTRIB** modifie les attributs d'un fichier. **+H** ajoute l'attribut *Hidden* (Caché). Le fichier ne sera plus visible dans l'explorateur (sauf si on force l'affichage des fichiers cachés)." },
+            { script: ['ROBOCOPY Source Dest /MIR'], options: ["Copie simple.", "Miroir exact (supprime dans Dest si absent de Source).", "Déplace tout.", "Copie sans effacer."], correct: 1, expl: "**ROBOCOPY** est un outil de copie robuste. **/MIR** (Mirror) crée une copie exacte : il copie les nouveaux fichiers, mais **supprime aussi** dans la destination les fichiers qui n'existent plus dans la source." },
+            { script: ['SFC /SCANNOW'], options: ["Scanne les virus.", "Vérifie et répare les fichiers système Windows.", "Formate le disque.", "Scanne le réseau."], correct: 1, expl: "**SFC** (System File Checker) est un outil de maintenance vital. **/SCANNOW** vérifie l'intégrité des fichiers protégés de Windows et tente de réparer ceux qui sont corrompus." },
+            { script: ['GPUPDATE /FORCE'], options: ["Force la mise à jour Windows.", "Applique immédiatement les stratégies de groupe.", "Redémarre le PC.", "Force l'arrêt."], correct: 1, expl: "Dans un environnement professionnel (domaine), les configurations (GPO) se mettent à jour périodiquement. **GPUPDATE /FORCE** oblige l'ordinateur à récupérer et appliquer les dernières règles immédiatement." },
+            { script: ['GETMAC /V'], options: ["Télécharge un Mac.", "Affiche l'adresse physique des cartes réseau.", "Affiche l'IP.", "Change l'adresse MAC."], correct: 1, expl: "L'adresse MAC est l'identifiant physique unique d'une carte réseau. **GETMAC** permet de l'afficher. **/V** (Verbose) donne plus de détails, comme le nom de la connexion." },
+            { script: ['NETSH WLAN SHOW PROFILES'], options: ["Affiche les réseaux WiFi enregistrés.", "Pirate le WiFi.", "Connecte au WiFi.", "Coupe le WiFi."], correct: 0, expl: "Cette commande liste tous les profils Wi-Fi (SSID) auxquels l'ordinateur s'est déjà connecté et qui sont enregistrés dans le système." },
+            { script: ['ASSOC .py=Python.File'], options: ["Ouvre Python.", "Associe l'extension .py au type Python.File.", "Supprime .py.", "Renomme en .py."], correct: 1, expl: "**ASSOC** permet de voir ou modifier les associations de fichiers. Ici, on dit au système que tous les fichiers finissant par **.py** doivent être considérés comme des fichiers de type *Python.File*." },
+            { script: ['CHKDSK C: /F /R'], options: ["Vérifie le disque, corrige erreurs et secteurs défectueux.", "Formate C:.", "Affiche la taille de C:.", "Défragmente C:."], correct: 0, expl: "**CHKDSK** (Check Disk) analyse le disque dur. **/F** corrige les erreurs logiques du système de fichiers. **/R** localise les secteurs physiques défectueux et tente de récupérer les informations." },
+            { script: ['CIPHER /W:C:\\'], options: ["Chiffre C:.", "Nettoie l'espace libre (écrit des zéros) sur C:.", "Formate C:.", "Compresse C:."], correct: 1, expl: "Bien que **CIPHER** serve au chiffrement, l'option **/W** (Wipe) est spéciale : elle parcourt tout l'espace *libre* du disque et écrit des données aléatoires par-dessus pour empêcher la récupération de fichiers supprimés." },
+            { script: ['SYSTEMINFO | FIND "Boot Time"'], options: ["Redémarre.", "Affiche l'heure du dernier démarrage.", "Change l'heure.", "Affiche tout."], correct: 1, expl: "**SYSTEMINFO** affiche énormément de données. Le symbole **|** (pipe) envoie ce résultat à la commande **FIND**, qui ne gardera et n'affichera que la ligne contenant le texte 'Boot Time'." },
+            { script: ['TIMEOUT /T 30 /NOBREAK'], options: ["Attend 30s sans possibilité d'annuler (sauf Ctrl+C).", "Attend 30s.", "Arrête dans 30s.", "Erreur."], correct: 0, expl: "**TIMEOUT** met le script en pause. Normalement, appuyer sur une touche coupe l'attente. L'option **/NOBREAK** force le script à ignorer les touches (seul Ctrl+C peut l'interrompre)." },
+            { script: ['COLOR 0A'], options: ["Change la couleur (Fond Noir, Texte Vert).", "Affiche 0A.", "Réinitialise la couleur.", "Erreur."], correct: 0, expl: "**COLOR** change l'apparence de la console. Le premier chiffre (**0**) est la couleur de fond (Noir), le second (**A**) est la couleur du texte (Vert clair). C'est le look 'Matrix' classique." },
+            { script: ['REN *.txt *.bak'], options: ["Supprime les txt.", "Change l'extension de tous les txt en bak.", "Copie les txt.", "Déplace les txt."], correct: 1, expl: "**REN** (Rename) supporte les caractères génériques (*). Ici, `*.txt` sélectionne tous les fichiers texte, et `*.bak` change leur extension en .bak sans modifier leur nom." },
+            { script: ['EXIT /B 1'], options: ["Ferme la fenêtre.", "Quitte le script avec un code d'erreur 1.", "Redémarre.", "Ouvre une fenêtre."], correct: 1, expl: "**EXIT** ferme normalement la console. **/B** indique de ne fermer que le *script actuel* (batch) mais de laisser la fenêtre CMD ouverte. **1** est le code de retour (ErrorLevel) renvoyé." }
+        ];
+
+        // --- 3. DONNÉES CRÉATION (INCHANGÉES) ---
+        const creationData = [
+            { task: "Affichez 'Bonjour' à l'écran.", ans: "ECHO Bonjour", expl: "Simple affichage de texte." },
+            { task: "Nettoyez l'écran de la console.", ans: "CLS", expl: "Clear Screen." },
+            { task: "Créez un dossier nommé 'Data'.", ans: "MD Data", expl: "Ou MKDIR Data." },
+            { task: "Changez le répertoire actuel vers 'C:\\Windows'.", ans: "CD C:\\Windows", expl: "Change Directory." },
+            { task: "Listez tous les fichiers, y compris cachés, du dossier actuel.", ans: "DIR /A", expl: "/A affiche les attributs (dont cachés)." },
+            { task: "Supprimez le fichier 'old.txt'.", ans: "DEL old.txt", expl: "Delete." },
+            { task: "Copiez 'source.txt' vers 'D:\\Backup'.", ans: "COPY source.txt D:\\Backup", expl: "Copie simple." },
+            { task: "Renommez 'rapport.doc' en 'final.doc'.", ans: "REN rapport.doc final.doc", expl: "Rename." },
+            { task: "Déplacez 'image.jpg' dans le dossier 'Images'.", ans: "MOVE image.jpg Images", expl: "Move." },
+            { task: "Affichez votre configuration IP.", ans: "IPCONFIG", expl: "Commande réseau de base." },
+            { task: "Testez la connexion vers 'google.com'.", ans: "PING google.com", expl: "Envoie des paquets ICMP." },
+            { task: "Arrêtez l'ordinateur immédiatement (0 sec).", ans: "SHUTDOWN /S /T 0", expl: "/S (Stop), /T (Time)." },
+            { task: "Affichez le contenu du fichier 'readme.txt'.", ans: "TYPE readme.txt", expl: "Affiche le texte dans la console." },
+            { task: "Créez une variable 'Nom' contenant 'Valentin'.", ans: "SET Nom=Valentin", expl: "Pas d'espace autour du = de préférence." },
+            { task: "Supprimez le dossier 'Temp' et tout son contenu.", ans: "RD Temp /S", expl: "/S supprime l'arborescence." },
+            { task: "Tuez le processus 'notepad.exe'.", ans: "TASKKILL /IM notepad.exe", expl: "/IM pour Image Name." },
+            { task: "Affichez les tâches planifiées.", ans: "SCHTASKS", expl: "Affiche la liste par défaut." },
+            { task: "Forcez la mise à jour des stratégies de groupe.", ans: "GPUPDATE /FORCE", expl: "Classique admin sys." },
+            { task: "Vérifiez l'intégrité des fichiers système.", ans: "SFC /SCANNOW", expl: "Nécessite les droits admin." },
+            { task: "Tracez la route vers '8.8.8.8'.", ans: "TRACERT 8.8.8.8", expl: "Affiche les sauts (routeurs)." },
+            { task: "Affichez les connexions réseau actives.", ans: "NETSTAT -an", expl: "-a (tout), -n (numérique)." },
+            { task: "Libérez votre adresse IP actuelle.", ans: "IPCONFIG /RELEASE", expl: "Coupe la connexion IP." },
+            { task: "Associez la lettre Z: au partage \\\\Srv\\Data.", ans: "NET USE Z: \\\\Srv\\Data", expl: "Montage lecteur réseau." },
+            { task: "Affichez la date actuelle.", ans: "DATE /T", expl: "/T pour afficher sans demander de modification." },
+            { task: "Créez un fichier vide nommé 'new.txt' (astuce: type nul).", ans: "TYPE NUL > new.txt", expl: "Astuce classique ou 'copy nul new.txt'." },
+            { task: "Affichez l'aide de la commande ATTRIB.", ans: "ATTRIB /?", expl: "/? marche pour presque toutes les commandes." },
+            { task: "Bouclez pour afficher les nombres de 1 à 5.", ans: "FOR %i IN (1,1,5) DO ECHO %i", expl: "Boucle /L implicite ou explicite." },
+            { task: "Affichez 'Admin' si le fichier 'pass.txt' existe.", ans: "IF EXIST pass.txt ECHO Admin", expl: "Conditionnelle simple." },
+            { task: "Fermez la fenêtre CMD.", ans: "EXIT", expl: "Quitte l'interpréteur." },
+            { task: "Changez la couleur de la console en vert clair.", ans: "COLOR A", expl: "0-F pour fond/texte." }
+        ];
+
+        // --- 4. DONNÉES MISSIONS (INCHANGÉES) ---
+        const missions = [
+            {
+                title: "Nettoyage Virus",
+                desc: "Un processus 'virus.exe' ralentit le PC. Identifiez-le, tuez-le et supprimez sa trace.",
+                steps: [
+                    { instruction: "1. Affichez la liste des processus.", expected: "TASKLIST" },
+                    { instruction: "2. Arrêtez 'virus.exe' de force.", expected: "TASKKILL /IM VIRUS.EXE /F" },
+                    { instruction: "3. Supprimez le fichier 'temp_virus.dat'.", expected: "DEL TEMP_VIRUS.DAT" }
+                ]
+            },
+            {
+                title: "Diagnostique Réseau",
+                desc: "Plus d'internet. Vérifiez votre IP et testez la connexion.",
+                steps: [
+                    { instruction: "1. Affichez votre configuration IP complète.", expected: "IPCONFIG /ALL" },
+                    { instruction: "2. Lancez un ping continu vers 8.8.8.8.", expected: "PING 8.8.8.8 -T" }
+                ]
+            },
+            {
+                title: "Gestion de Fichiers",
+                desc: "Organisez vos documents. Créez un dossier de sauvegarde et copiez-y vos fichiers texte.",
+                steps: [
+                    { instruction: "1. Créez un dossier nommé 'Backup' sur D:.", expected: "MD D:\\BACKUP" },
+                    { instruction: "2. Copiez tous les fichiers .txt du dossier actuel vers D:\\Backup.", expected: "COPY *.TXT D:\\BACKUP" }
+                ]
+            },
+            {
+                title: "Administration Utilisateur",
+                desc: "Un nouvel employé arrive. Créez son compte et donnez-lui accès au réseau.",
+                steps: [
+                    { instruction: "1. Créez l'utilisateur 'Jean' avec le mot de passe 'ChangeMe'.", expected: "NET USER JEAN CHANGEME /ADD" },
+                    { instruction: "2. Connectez le lecteur Z: au serveur \\\\Srv\\Public.", expected: "NET USE Z: \\\\SRV\\PUBLIC" }
+                ]
+            },
+            {
+                title: "Maintenance Disque",
+                desc: "Le PC est lent. Vérifiez le disque C: et nettoyez l'espace libre.",
+                steps: [
+                    { instruction: "1. Lancez une vérification du disque C: (Mode lecture seule).", expected: "CHKDSK C:" },
+                    { instruction: "2. Nettoyez l'espace libre de C: avec Cipher.", expected: "CIPHER /W:C:\\" }
+                ]
+            }
+        ];
+
+        // --- 5. DONNÉES SNIPPETS ENRICHIES (AVEC DESCRIPTIONS) ---
+        const snippets = [
+            { 
+                title: "Sauvegarde Simple", 
+                desc: "Ce script crée un dossier 'Backup' sur le lecteur D: et utilise XCOPY pour y copier tout le contenu du dossier C:\\Data, y compris les sous-dossiers, sans demander de confirmation.",
+                code: "@ECHO OFF\nMD D:\\Backup\nXCOPY C:\\Data D:\\Backup /S /Y\nECHO Sauvegarde terminée !" 
+            },
+            { 
+                title: "Réparer Réseau", 
+                desc: "Script de dépannage classique. Il libère l'adresse IP actuelle, en demande une nouvelle au serveur DHCP et vide le cache DNS pour résoudre les problèmes de connexion.",
+                code: "@ECHO OFF\nIPCONFIG /RELEASE\nIPCONFIG /RENEW\nIPCONFIG /FLUSHDNS\nECHO Réseau réinitialisé." 
+            },
+            { 
+                title: "Boucle de Traitement Fichiers", 
+                desc: "Utilise une boucle FOR pour parcourir tous les fichiers .txt. Pour chacun, il affiche un message et ajoute son contenu à la fin d'un fichier de log global.",
+                code: "FOR %%F IN (*.txt) DO (\n   ECHO Traitement de %%F\n   TYPE %%F >> global.log\n)" 
+            },
+            { 
+                title: "Info Système vers Fichier", 
+                desc: "Exporte toutes les informations détaillées du système (Hardware, OS, Hotfixes) dans un fichier texte, puis ouvre automatiquement ce fichier.",
+                code: "SYSTEMINFO > config_pc.txt\nSTART config_pc.txt" 
+            },
+            { 
+                title: "Nettoyage Automatique", 
+                desc: "Supprime silencieusement tous les fichiers du dossier temporaire de l'utilisateur (%TEMP%) et vide le cache DNS pour faire du ménage rapide.",
+                code: "@ECHO OFF\nDEL /Q /S %TEMP%\\*\nIPCONFIG /FLUSHDNS\nECHO Nettoyage terminé." 
+            },
+            { 
+                title: "Audit Réseau Rapide", 
+                desc: "Affiche le nom de la machine, filtre l'affichage IP pour ne montrer que l'IPv4, et teste la connexion internet (Ping Google).",
+                code: "@ECHO OFF\nHOSTNAME\nIPCONFIG | FIND \"IPv4\"\nPING 8.8.8.8 -n 2\nPAUSE" 
+            },
+            { 
+                title: "Création Utilisateur + Groupe", 
+                desc: "Crée un nouvel utilisateur 'Stagiaire', puis l'ajoute au groupe local 'Utilisateurs'. Nécessite d'être exécuté en tant qu'administrateur.",
+                code: "NET USER Stagiaire 123456 /ADD\nNET LOCALGROUP \"Utilisateurs\" Stagiaire /ADD\nECHO Compte créé." 
+            }
+        ];
+
+        // --- 6. LOGIQUE JS ---
+
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            // --- Tabs & Theme ---
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabButtons.forEach(btn => btn.addEventListener('click', () => {
+                tabButtons.forEach(b => b.classList.remove('active'));
+                tabContents.forEach(c => c.classList.remove('active'));
+                btn.classList.add('active');
+                document.getElementById(btn.dataset.tab).classList.add('active');
+            }));
+
+            const modeBtn = document.getElementById('modeToggle');
+            modeBtn.addEventListener('click', () => document.body.classList.toggle('dark-mode'));
+
+            // --- Catalogue Logic (UPDATED) ---
+            const cmdListDiv = document.getElementById('commandList');
+            const renderCatalogue = (filter="") => {
+                cmdListDiv.innerHTML = "";
+                const sorted = commands.filter(c => c.name.includes(filter.toUpperCase()) || c.description.toLowerCase().includes(filter.toLowerCase())).sort((a,b) => a.name.localeCompare(b.name));
+                sorted.forEach(c => {
+                    const tag = document.createElement('span');
+                    tag.className = `command-tag ${['Admin','Réseau'].includes(c.category) ? 'admin' : ''}`;
+                    tag.textContent = c.name;
+                    tag.onclick = () => {
+                        const d = document.getElementById('commandDetails');
+                        d.classList.remove('hidden');
+                        
+                        // Basic Info
+                        d.querySelector('h3').textContent = c.name;
+                        d.querySelector('.description').textContent = c.description;
+                        d.querySelector('.syntax').textContent = c.syntax;
+                        d.querySelector('.example').textContent = c.example;
+                        
+                        // NEW: Detailed Description
+                        d.querySelector('.long-description').textContent = c.longDesc || c.description;
+
+                        // NEW: Arguments Table Generation
+                        const argsContainer = d.querySelector('.arguments-container');
+                        argsContainer.innerHTML = "";
+                        
+                        if(c.args && c.args.length > 0) {
+                            let tableHtml = `<table class="args-table"><thead><tr><th style="width:120px">Argument</th><th>Description</th></tr></thead><tbody>`;
+                            c.args.forEach(arg => {
+                                tableHtml += `<tr><td><code>${arg.flag}</code></td><td>${arg.desc}</td></tr>`;
+                            });
+                            tableHtml += `</tbody></table>`;
+                            argsContainer.innerHTML = tableHtml;
+                        } else {
+                            argsContainer.innerHTML = "<p><em>Aucun argument spécifique listé ou commande simple.</em></p>";
+                        }
+                    };
+                    cmdListDiv.appendChild(tag);
+                });
+            };
+            document.getElementById('searchCmd').addEventListener('input', (e) => renderCatalogue(e.target.value));
+            renderCatalogue();
+
+            // --- QCM Logic ---
+            let qcmIndices = [];
+            
+            function nextQCM() {
+                if(qcmIndices.length === 0) {
+                    qcmIndices = Array.from(Array(qcmData.length).keys()).sort(() => Math.random() - 0.5);
+                }
+                const idx = qcmIndices.pop();
+                
+                const q = qcmData[idx];
+                document.getElementById('qcmCount').textContent = qcmData.length - qcmIndices.length;
+                document.getElementById('scriptCodeQCM').textContent = q.script.join('\n');
+                const optDiv = document.getElementById('quizOptions');
+                optDiv.innerHTML = "";
+                q.options.forEach((opt, i) => {
+                    const l = document.createElement('label');
+                    l.innerHTML = `<input type="radio" name="qcm" value="${i}"> ${opt}`;
+                    optDiv.appendChild(l);
+                });
+                
+                document.getElementById('identifier').dataset.currentIdx = idx;
+                resetQCMUI();
+            }
+
+            function resetQCMUI() {
+                document.getElementById('identificationFeedback').classList.add('hidden');
+                document.getElementById('validateIdentification').classList.remove('hidden');
+                document.getElementById('showSolution').classList.remove('hidden');
+                document.getElementById('nextIdentification').classList.add('hidden');
+            }
+
+            function solveQCM(showOnly = false) {
+                const idx = parseInt(document.getElementById('identifier').dataset.currentIdx);
+                const q = qcmData[idx];
+                const sel = document.querySelector('input[name="qcm"]:checked');
+                
+                if(!showOnly && !sel) return alert("Sélectionnez une réponse.");
+                
+                const userVal = sel ? parseInt(sel.value) : -1;
+                const correct = (userVal === q.correct);
+
+                const fb = document.getElementById('identificationFeedback');
+                fb.classList.remove('hidden');
+                document.getElementById('validateIdentification').classList.add('hidden');
+                document.getElementById('showSolution').classList.add('hidden');
+                document.getElementById('nextIdentification').classList.remove('hidden');
+
+                const msg = fb.querySelector('.result-message');
+                if(showOnly) {
+                    msg.innerHTML = "Voici la solution :";
+                    msg.className = "result-message info";
+                } else {
+                    msg.innerHTML = correct ? "Correct !" : "Faux.";
+                    msg.className = "result-message " + (correct ? "success" : "error");
+                }
+                document.getElementById('explanationDetails').innerHTML = `<p>${q.expl}</p>`;
+                
+                const inputs = document.querySelectorAll('input[name="qcm"]');
+                inputs[q.correct].parentElement.style.background = "rgba(40, 167, 69, 0.2)";
+                if(!correct && userVal !== -1) inputs[userVal].parentElement.style.background = "rgba(220, 53, 69, 0.2)";
+            }
+
+            document.getElementById('validateIdentification').onclick = () => solveQCM(false);
+            document.getElementById('showSolution').onclick = () => solveQCM(true);
+            document.getElementById('nextIdentification').onclick = nextQCM;
+            nextQCM(); 
+
+            // --- Creation Logic ---
+            let creaIndices = [];
+
+            function nextCreation() {
+                if(creaIndices.length === 0) {
+                    creaIndices = Array.from(Array(creationData.length).keys()).sort(() => Math.random() - 0.5);
+                }
+                const idx = creaIndices.pop();
+                const c = creationData[idx];
+                
+                document.getElementById('creationTask').textContent = `Tâche : ${c.task}`;
+                document.getElementById('creationAnswer').value = "";
+                document.getElementById('creationFeedback').classList.add('hidden');
+                document.getElementById('validateCreation').classList.remove('hidden');
+                document.getElementById('showCreationSolution').classList.remove('hidden'); 
+                document.getElementById('nextCreation').classList.add('hidden');
+                
+                document.getElementById('creation').dataset.currentIdx = idx;
+            }
+
+            function solveCreation(showOnly = false) {
+                const idx = parseInt(document.getElementById('creation').dataset.currentIdx);
+                const c = creationData[idx];
+                const val = document.getElementById('creationAnswer').value.trim().toUpperCase();
+                const corr = c.ans.toUpperCase();
+                
+                const fb = document.getElementById('creationFeedback');
+                fb.classList.remove('hidden');
+                document.getElementById('validateCreation').classList.add('hidden');
+                document.getElementById('showCreationSolution').classList.add('hidden');
+                document.getElementById('nextCreation').classList.remove('hidden');
+
+                let msgHtml = "";
+                let msgClass = "";
+
+                if(showOnly) {
+                     msgHtml = "Voici la solution :";
+                     msgClass = "result-message info";
+                } else {
+                    const ok = (val === corr) || (val.replace(/\s+/g,' ') === corr.replace(/\s+/g,' '));
+                    msgHtml = ok ? "Script Correct !" : "Ce n'est pas tout à fait ça.";
+                    msgClass = "result-message " + (ok ? "success" : "error");
+                }
+
+                const msg = fb.querySelector('.result-message');
+                msg.innerHTML = msgHtml;
+                msg.className = msgClass;
+                document.getElementById('correctSolution').textContent = c.ans;
+                document.getElementById('solutionExplanation').textContent = c.expl;
+            }
+
+            document.getElementById('validateCreation').onclick = () => solveCreation(false);
+            document.getElementById('showCreationSolution').onclick = () => solveCreation(true);
+            document.getElementById('nextCreation').onclick = nextCreation;
+            nextCreation(); 
+
+            // --- Sandbox Logic ---
+            
+            let fileSystem = {
+                "C:": {
+                    type: "dir",
+                    content: {
+                        "Users": {
+                            type: "dir",
+                            content: {
+                                "Admin": {
+                                    type: "dir",
+                                    content: {
+                                        "note.txt": { type: "file", content: "Penser au lait" }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+
+            let currentPath = ["C:", "Users", "Admin"];
+
+            function getCurrentDirObj() {
+                let current = fileSystem;
+                for (let folder of currentPath) {
+                    if (current[folder]) {
+                        current = current[folder];
+                    } else if (current.content && current.content[folder]) {
+                        current = current.content[folder];
+                    } else {
+                        return null; 
+                    }
+                }
+                return current;
+            }
+
+            function renderFS() {
+                const container = document.getElementById('fileSystemView');
+                container.innerHTML = "";
+                
+                const currentDirObj = getCurrentDirObj();
+                if (!currentDirObj || !currentDirObj.content) return; 
+
+                if (currentPath.length > 1) {
+                    const back = document.createElement('div');
+                    back.className = 'file-item';
+                    back.innerHTML = '📂 .. (Retour)';
+                    back.onclick = () => { 
+                        currentPath.pop(); 
+                        renderFS(); 
+                        updatePrompt(); 
+                    };
+                    container.appendChild(back);
+                }
+
+                for (let name in currentDirObj.content) {
+                    const item = currentDirObj.content[name];
+                    const el = document.createElement('div');
+                    el.className = 'file-item';
+                    const icon = (item.type === 'dir') ? '📂 ' : '📄 ';
+                    el.innerHTML = icon + name;
+                    
+                    if (item.type === 'dir') {
+                        el.onclick = () => {
+                            currentPath.push(name);
+                            renderFS();
+                            updatePrompt();
+                        }
+                    }
+                    container.appendChild(el);
+                }
+            }
+
+            function updatePrompt() {
+                document.getElementById('termPrompt').textContent = currentPath.join("\\") + ">";
+            }
+
+            function logTerm(text) {
+                const out = document.getElementById('termOutput');
+                out.innerHTML += `<div>${text}</div>`;
+                out.scrollTop = out.scrollHeight;
+            }
+
+            document.getElementById('sandboxInput').addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    const rawInput = this.value.trim();
+                    if(!rawInput) return;
+                    
+                    logTerm(document.getElementById('termPrompt').textContent + " " + rawInput);
+                    this.value = "";
+
+                    const parts = rawInput.split(" ");
+                    const cmd = parts[0].toUpperCase();
+                    const arg = parts[1];
+
+                    const currentDirObj = getCurrentDirObj();
+
+                    if (cmd === "CLS") {
+                        document.getElementById('termOutput').innerHTML = "";
+                    } 
+                    else if (cmd === "MD" || cmd === "MKDIR") {
+                        if (arg) {
+                            if (!currentDirObj.content[arg]) {
+                                currentDirObj.content[arg] = { type: "dir", content: {} };
+                                renderFS();
+                                logTerm("Dossier créé.");
+                            } else {
+                                logTerm("Erreur: Le dossier existe déjà.");
+                            }
+                        } else logTerm("Erreur: Syntaxe incorrecte.");
+                    }
+                    else if (cmd === "DEL") {
+                        if (arg && currentDirObj.content[arg] && currentDirObj.content[arg].type === "file") {
+                            delete currentDirObj.content[arg];
+                            renderFS();
+                            logTerm("Fichier supprimé.");
+                        } else logTerm("Erreur: Fichier introuvable.");
+                    }
+                    else if (cmd === "RD") {
+                        if (arg && currentDirObj.content[arg] && currentDirObj.content[arg].type === "dir") {
+                            delete currentDirObj.content[arg];
+                            renderFS();
+                            logTerm("Dossier supprimé.");
+                        } else logTerm("Erreur: Dossier introuvable.");
+                    }
+                    else if (cmd === "DIR") {
+                        for (let k in currentDirObj.content) {
+                             const type = currentDirObj.content[k].type === 'dir' ? "<DIR>" : "     ";
+                             logTerm(`${type}  ${k}`);
+                        }
+                    }
+                    else if (cmd === "ECHO") {
+                        logTerm(rawInput.substring(5));
+                    }
+                    else if (cmd === "CD") {
+                        if (!arg) {
+                             logTerm(currentPath.join("\\"));
+                        } else if (arg === "..") {
+                            if (currentPath.length > 1) {
+                                currentPath.pop();
+                                renderFS();
+                                updatePrompt();
+                            }
+                        } else {
+                            if (currentDirObj.content[arg] && currentDirObj.content[arg].type === 'dir') {
+                                currentPath.push(arg);
+                                renderFS();
+                                updatePrompt();
+                            } else {
+                                logTerm("Chemin introuvable.");
+                            }
+                        }
+                    }
+                    else {
+                        logTerm(`'${cmd}' n'est pas reconnu comme commande interne.`);
+                    }
+                }
+            });
+
+            renderFS();
+            updatePrompt();
+
+
+            // --- Missions Logic ---
+            let curMisIdx = -1;
+            let curStep = 0;
+            let missionQueue = [];
+
+            window.startRandomMission = () => {
+                if(missionQueue.length === 0) {
+                    missionQueue = Array.from(Array(missions.length).keys()).sort(() => Math.random() - 0.5);
+                }
+                
+                curMisIdx = missionQueue.pop();
+                curStep = 0;
+                
+                document.getElementById('missionSelect').classList.add('hidden');
+                document.getElementById('missionActive').classList.remove('hidden');
+                document.getElementById('missionTitle').textContent = missions[curMisIdx].title;
+                document.getElementById('missionDesc').textContent = missions[curMisIdx].desc;
+                document.getElementById('missionInput').value = "";
+                document.getElementById('missionFeedback').textContent = "";
+                document.getElementById('nextMissionBtn').classList.add('hidden');
+                
+                renderSteps();
+            };
+
+            function renderSteps() {
+                const div = document.getElementById('missionSteps');
+                div.innerHTML = '';
+                missions[curMisIdx].steps.forEach((s, i) => {
+                    div.innerHTML += `<div class="mission-step" style="border-left-color:${i === curStep ? 'var(--color-primary)' : '#ccc'}">
+                        <span class="mission-status ${i < curStep ? 'status-done' : 'status-todo'}">${i < curStep ? '✅' : '⏳'}</span>
+                        ${s.instruction}
+                    </div>`;
+                });
+            }
+
+            document.getElementById('showMissionSol').onclick = () => {
+                const expected = missions[curMisIdx].steps[curStep].expected;
+                document.getElementById('missionFeedback').innerHTML = `<span style="color:var(--color-info)">Solution : ${expected}</span>`;
+            };
+
+            document.getElementById('missionInput').addEventListener('keydown', (e) => {
+                if(e.key === 'Enter') {
+                    const val = e.target.value.trim().toUpperCase().replace(/\s+/g, ' ');
+                    const expected = missions[curMisIdx].steps[curStep].expected;
+                    
+                    if(val === expected) {
+                        curStep++;
+                        if(curStep >= missions[curMisIdx].steps.length) { 
+                            document.getElementById('missionFeedback').innerHTML = "<span style='color:var(--color-accent-light)'>MISSION ACCOMPLIE ! 🎉</span>";
+                            renderSteps();
+                            document.getElementById('nextMissionBtn').classList.remove('hidden');
+                        } else { 
+                            renderSteps(); 
+                            document.getElementById('missionFeedback').textContent = "Correct ! Étape suivante..."; 
+                        }
+                        e.target.value = '';
+                    } else { 
+                        document.getElementById('missionFeedback').textContent = "Incorrect. Réessayez."; 
+                    }
+                }
+            });
+
+            window.exitMission = () => {
+                document.getElementById('missionActive').classList.add('hidden');
+                document.getElementById('missionSelect').classList.remove('hidden');
+            }
+
+            // --- Snippets Loader (UPDATED) ---
+            const snipDiv = document.getElementById('snippetList');
+            snippets.forEach(s => {
+                const c = document.createElement('div');
+                c.className = "snippet-card";
+                
+                // NEW: Insertion de la description
+                c.innerHTML = `
+                    <strong>${s.title}</strong>
+                    <div class="snippet-desc">${s.desc}</div>
+                    <pre>${s.code}</pre>
+                    <button class="copy-btn">Copier</button>
+                `;
+                c.querySelector('button').onclick = () => { navigator.clipboard.writeText(s.code); alert('Copié !'); };
+                snipDiv.appendChild(c);
+            });
+        });
+    </script>
+</body>
+</html>
