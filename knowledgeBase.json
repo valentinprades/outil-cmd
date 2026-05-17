@@ -1,0 +1,314 @@
+[
+  {
+    "id": "users-create",
+    "category": "1. Utilisateurs & Groupes",
+    "title": "Créer un utilisateur",
+    "description": "Sous Debian, il est fortement recommandé d'utiliser adduser, qui est un script interactif plus complet que useradd (il crée automatiquement le dossier personnel, configure le shell par défaut et demande le mot de passe).",
+    "commands": [
+      { "code": "sudo adduser jean", "note": "Recommandé sous Debian (Interactif)" },
+      { "code": "sudo useradd -m -s /bin/bash jean", "note": "Commande universelle low-level" }
+    ],
+    "alert": "",
+    "alertType": ""
+  },
+  {
+    "id": "groups-create",
+    "category": "1. Utilisateurs & Groupes",
+    "title": "Créer un groupe",
+    "description": "Pour créer un nouveau groupe de sécurité (utile pour la gestion des droits partagés).",
+    "commands": [
+      { "code": "sudo groupadd tech_users", "note": "Création simple" }
+    ],
+    "alert": "",
+    "alertType": ""
+  },
+  {
+    "id": "groups-add-user",
+    "category": "1. Utilisateurs & Groupes",
+    "title": "Ajouter un utilisateur à un groupe",
+    "description": "Pour ajouter un utilisateur à un groupe sans supprimer ses groupes actuels, l'option -aG (Append / Group) de la commande usermod est indispensable.",
+    "commands": [
+      { "code": "sudo usermod -aG tech_users jean", "note": "Ajoute 'jean' au groupe 'tech_users'" }
+    ],
+    "alert": "Piège : Si tu oublies le -a (comme dans usermod -G tech_users jean), l'utilisateur sera supprimé de tous ses autres groupes (y compris le groupe sudo s'il en faisait partie). Le -a pour \"Append\" (ajouter) est crucial.",
+    "alertType": "warning"
+  },
+  {
+    "id": "users-verify",
+    "category": "1. Utilisateurs & Groupes",
+    "title": "Vérification des groupes",
+    "description": "Pour vérifier que l'utilisateur est bien dans le groupe, utilise la commande id suivie du nom de l'utilisateur. La sortie affichera l'UID, son GID principal, ainsi que la liste de tous les groupes auxquels il appartient.",
+    "commands": [
+      { "code": "id jean", "note": "Affiche les identifiants et groupes" }
+    ]
+  },
+  {
+    "id": "users-list",
+    "category": "1. Utilisateurs & Groupes",
+    "title": "Voir la liste de tous les utilisateurs",
+    "description": "Sous Linux, tous les comptes utilisateurs (système et humains) sont répertoriés dans le fichier /etc/passwd.",
+    "commands": [
+      { "code": "cat /etc/passwd", "note": "Affiche le fichier complet avec tous les détails" },
+      { "code": "cut -d: -f1 /etc/passwd", "note": "L'astuce (n'affiche que les noms de login)" }
+    ],
+    "alert": "L'astuce 'cut' découpe le fichier en utilisant le séparateur deux-points (-d:) et ne garde que la première colonne (-f1). C'est une excellente démonstration de maîtrise de la CLI.",
+    "alertType": "info"
+  },
+  {
+    "id": "folders-create",
+    "category": "2. Fichiers & Dossiers",
+    "title": "Créer une arborescence de dossiers",
+    "description": "La commande de base est mkdir (make directory). L'option -p (parents) crée automatiquement les dossiers parents s'ils n'existent pas encore, t'évitant une erreur \"No such file or directory\".",
+    "commands": [
+      { "code": "mkdir /mnt/documents", "note": "Création d'un dossier simple" },
+      { "code": "mkdir -p /mnt/data/techniques/archives", "note": "Création d'une arborescence complète d'un coup" }
+    ]
+  },
+  {
+    "id": "rights-chown",
+    "category": "3. Gestion des Droits",
+    "title": "Donner la propriété d'un dossier (chown)",
+    "description": "Sous Linux, la gestion des droits se divise en deux : qui possède le dossier (chown), et qu'est-ce qu'on a le droit d'y faire (chmod).",
+    "commands": [
+      { "code": "sudo chown jean /mnt/documents", "note": "Donner la propriété à un utilisateur seul" },
+      { "code": "sudo chown :tech_users /mnt/documents", "note": "Donner la propriété à un groupe seul" },
+      { "code": "sudo chown jean:tech_users /mnt/documents", "note": "Le combo parfait (Utilisateur + Groupe d'un coup)" },
+      { "code": "sudo chown -R jean:tech_users /mnt/documents", "note": "L'option indispensable (-R) pour appliquer aux sous-dossiers" }
+    ]
+  },
+  {
+    "id": "rights-chmod",
+    "category": "3. Gestion des Droits",
+    "title": "Définir les permissions d'accès (chmod)",
+    "description": "La commande chmod définit les droits de Lecture (4=r), Écriture (2=w) et Exécution (1=x) pour le Propriétaire (u), le Groupe (g) et les Autres (o).\n\nLes 4 combinaisons classiques :\n- 755 : Le standard des dossiers publics\n- 700 : Le dossier ultra-privé\n- 644 : Le standard des fichiers de configuration / HTML\n- 600 : La clé SSH ou le fichier de mot de passe",
+    "commands": [
+      { "code": "sudo chmod 750 /mnt/documents", "note": "Exemple : 7 (Proprio: rwx), 5 (Groupe: r-x), 0 (Autres: aucun)" }
+    ],
+    "alert": "Matrice des droits : 7 = Tout faire (4+2+1), 6 = Lire/Écrire (4+2), 5 = Lire/Exécuter (4+1), 4 = Lecture (4)",
+    "alertType": "info"
+  },
+  {
+    "id": "archive-tar",
+    "category": "4. Archivage (TAR)",
+    "title": "L'anatomie de la commande tar",
+    "description": "La commande tar est indispensable pour créer des scripts de sauvegarde. Contrairement à zip, tar de base ne compresse pas : il archive. Pour compresser, on y associe souvent gzip (-z).\n\nActions : -c (Create), -x (eXtract), -t (Table of contents).\nOptions : -z (Gzip), -v (Verbose), -f (File).",
+    "commands": [
+      { "code": "sudo tar -cvzf /backup/sauvegarde_tech.tar.gz /mnt/documents", "note": "Cas A : Créer une sauvegarde compressée d'un dossier" },
+      { "code": "tar -tvf /backup/sauvegarde_tech.tar.gz", "note": "Cas B : Voir le contenu de la sauvegarde (sans l'extraire)" },
+      { "code": "sudo tar -xvzf /backup/sauvegarde_tech.tar.gz -C /tmp", "note": "Cas C : Extraire/Restaurer dans un dossier spécifique avec l'option -C" }
+    ],
+    "alert": "Piège 1 : L'ordre de la lettre -f doit impérativement être la dernière (juste avant le nom de fichier). Piège 2 : tar enlève le '/' initial des chemins absolus par sécurité.",
+    "alertType": "warning"
+  },
+  {
+    "id": "apache-deploy",
+    "category": "5. Serveur Web (Apache)",
+    "title": "Déploiement d'un serveur Web Apache",
+    "description": "L'objectif est de faire héberger à la machine Debian un site accessible via le nom www.engineer.valentin (Virtual Host) plutôt que par son adresse IP.",
+    "commands": [
+      { "code": "sudo apt update && sudo apt install apache2 -y", "note": "Étape 1 : Mise à jour et installation" },
+      { "code": "sudo mkdir -p /var/www/engineer\nsudo chown -R www-data:www-data /var/www/engineer\nsudo chmod -R 755 /var/www/engineer", "note": "Étape 2 : Préparation du dossier et droits" },
+      { "code": "sudo nano /etc/apache2/sites-available/engineer.conf", "note": "Étape 3 : Création du Virtual Host" }
+    ]
+  },
+  {
+    "id": "apache-validation",
+    "category": "5. Serveur Web (Apache)",
+    "title": "Activation et Validation (Apache)",
+    "description": "Le réflexe : Avant de redémarrer le service web comme un bourrin, on teste toujours la syntaxe de sa configuration.",
+    "commands": [
+      { "code": "sudo a2ensite engineer.conf", "note": "1. Activer le nouveau site" },
+      { "code": "sudo a2dissite 000-default.conf", "note": "2. Désactiver le site par défaut" },
+      { "code": "sudo apache2ctl configtest", "note": "3. LE RÉFLEXE : Tester la syntaxe (Doit afficher 'Syntax OK')" },
+      { "code": "sudo systemctl reload apache2", "note": "4. Recharger le service si le test est OK" }
+    ]
+  },
+  {
+    "id": "users-create-multiple",
+    "category": "1. Utilisateurs & Groupes",
+    "title": "Créer plusieurs utilisateurs d'un coup",
+    "description": "Pour provisionner plusieurs comptes simultanément, une simple boucle bash fait parfaitement l'affaire. Pour des imports plus complexes incluant des mots de passe différents, l'outil dédié 'newusers' est la méthode recommandée.",
+    "commands": [
+      { "code": "for user in alice bob charlie; do sudo useradd -m -s /bin/bash $user; done", "note": "Création en masse basique via une boucle for" },
+      { "code": "sudo newusers liste_rh.txt", "note": "Création en masse complète via fichier batch" }
+    ],
+    "alert": "L'outil 'newusers' lit un fichier texte dont chaque ligne doit respecter exactement la structure de /etc/passwd (login:mot_de_passe:UID:GID:commentaire:repertoire:shell). C'est la méthode la plus rapide pour un import massif de nouveaux arrivants.",
+    "alertType": "info"
+  },
+  {
+    "id": "groups-create-multiple",
+    "category": "1. Utilisateurs & Groupes",
+    "title": "Créer plusieurs groupes",
+    "description": "Bien qu'il n'y ait pas d'option native dans 'groupadd' pour en créer plusieurs d'un coup, l'utilisation d'une boucle bash ou de 'xargs' permet de le faire facilement et proprement.",
+    "commands": [
+      { "code": "for groupe in dev ops rh; do sudo groupadd $groupe; done", "note": "Création en masse via une boucle for" },
+      { "code": "echo \"dev ops rh\" | xargs -n 1 sudo groupadd", "note": "Alternative plus compacte avec xargs" }
+    ],
+    "alert": "L'option '-n 1' de xargs est importante : elle indique d'exécuter la commande groupadd pour chaque élément passé en argument, un par un.",
+    "alertType": "info"
+  },
+  {
+    "id": "logs-analysis",
+    "category": "6. Dépannage & Logs",
+    "title": "Méthodologie d'analyse des Logs",
+    "description": "Scénario typique : un fichier a été modifié et ton serveur Apache ou SSH refuse de démarrer. Voici la méthode scientifique pour identifier et réparer la panne en moins de 5 minutes.",
+    "commands": [
+      { "code": "sudo systemctl status apache2", "note": "1. L'interrogatoire du service : regarder si 'Active: failed'" },
+      { "code": "sudo journalctl -eu apache2", "note": "2. L'analyse approfondie : log complet du service pour la session" },
+      { "code": "sudo tail -n 20 /var/log/apache2/error.log", "note": "3. L'inspection des fichiers de logs dédiés" }
+    ],
+    "alert": "Astuce ultime : La commande 'sudo tail -f /var/log/apache2/error.log' garde le terminal ouvert et affiche les erreurs en temps réel au moment même où tu essaies de te connecter. C'est l'outil de diagnostic parfait.",
+    "alertType": "info"
+  },
+  {
+    "id": "storage-fstab",
+    "category": "7. Stockage & Disques",
+    "title": "Le fichier /etc/fstab (Montage persistant)",
+    "advanced": true,
+    "description": "Pour qu'un disque dur ou un partage réseau reste monté après un redémarrage du serveur, il doit être inscrit dans le fichier /etc/fstab. L'anatomie d'une ligne fstab compte 6 colonnes séparées par des espaces ou tabulations :\n\n1. Périphérique (Ex: /dev/sdb1 ou UUID=...)\n2. Point de montage (Ex: /mnt/data)\n3. Type de fichier (Ex: ext4, ntfs, cifs)\n4. Options (Ex: defaults, ro, noexec)\n5. Dump (0 pour ignorer la sauvegarde)\n6. Pass (0 pour ignorer le check fsck au boot)",
+    "commands": [
+      { "code": "sudo nano /etc/fstab", "note": "Éditer le fichier de montage persistant" },
+      { "code": "sudo mount -a", "note": "LE RÉFLEXE : Tester le fstab sans redémarrer le serveur !" }
+    ],
+    "alert": "Danger critique : Une erreur de syntaxe dans fstab empêchera totalement le serveur de démarrer (il restera bloqué en mode urgence). Testez toujours avec 'mount -a' avant de rebooter.",
+    "alertType": "warning"
+  },
+  {
+    "id": "security-sshd",
+    "category": "8. Sécurité (SSH)",
+    "title": "Sécuriser le service SSH",
+    "advanced": true,
+    "description": "Le fichier de configuration principal du démon SSH est /etc/ssh/sshd_config. Pour sécuriser un serveur exposé sur Internet, 3 lignes doivent être modifiées en priorité : changer le port par défaut (évite les bots scanners), interdire la connexion directe en root, et interdire l'usage d'un mot de passe (obligeant l'usage d'une clé SSH).",
+    "commands": [
+      { "code": "Port 2222\nPermitRootLogin no\nPasswordAuthentication no", "note": "Les 3 modifications clés dans /etc/ssh/sshd_config" },
+      { "code": "sudo systemctl restart sshd", "note": "Application des modifications" }
+    ],
+    "alert": "Attention, ne désactivez pas 'PasswordAuthentication' avant d'avoir testé que votre clé SSH fonctionne bien, sinon vous vous enfermerez dehors !",
+    "alertType": "warning"
+  },
+  {
+    "id": "automation-cron",
+    "category": "9. Automatisation",
+    "title": "Tâches planifiées (Crontab)",
+    "description": "Le démon Cron permet d'exécuter des scripts de manière régulière. La syntaxe repose sur 5 étoiles de temporalité suivies de la commande.\n\nLes 5 étoiles : [Minute] [Heure] [Jour_du_Mois] [Mois] [Jour_de_Semaine]",
+    "commands": [
+      { "code": "crontab -e", "note": "Éditer les tâches planifiées de l'utilisateur actuel" },
+      { "code": "sudo crontab -e", "note": "Éditer les tâches en tant que root (nécessaire pour les backups)" },
+      { "code": "0 2 * * * /backup/script_sauvegarde.sh", "note": "Exemple : Exécuter tous les jours à 02h00 du matin" },
+      { "code": "*/15 * * * * ping -c 1 8.8.8.8", "note": "Exemple : Exécuter toutes les 15 minutes" }
+    ]
+  },
+  {
+    "id": "net-netplan",
+    "category": "10. Réseau Avancé",
+    "title": "Configuration Réseau avec Netplan (Ubuntu)",
+    "advanced": true,
+    "description": "Sous les distributions modernes comme Ubuntu, /etc/network/interfaces a été remplacé par Netplan. La configuration s'écrit désormais en YAML (attention à l'indentation de 2 espaces, pas de tabulation !).",
+    "commands": [
+      { "code": "sudo nano /etc/netplan/01-netcfg.yaml", "note": "1. Éditer le fichier de configuration YAML" },
+      { "code": "sudo netplan try", "note": "2. LE RÉFLEXE : Tester la configuration avec retour auto si perte de connexion" },
+      { "code": "sudo netplan apply", "note": "3. Appliquer la configuration définitivement" }
+    ],
+    "alert": "Piège YAML : Si vous utilisez la touche 'Tabulation' pour indenter votre fichier Netplan, il refusera de s'appliquer en affichant une erreur de syntaxe. Utilisez toujours la barre d'espace.",
+    "alertType": "warning"
+  },
+  {
+    "id": "sys-systemd",
+    "category": "11. Cœur du Système",
+    "title": "Anatomie d'un service Systemd",
+    "advanced": true,
+    "description": "Les scripts de démarrage (/etc/init.d/) sont obsolètes. Tout service est défini par un 'Unit File' situé dans /lib/systemd/system/ (fourni par le paquet) ou /etc/systemd/system/ (pour vos services custom).\n\nStructure clé :\n[Unit] Description et prérequis\n[Service] Chemin de l'exécutable (ExecStart) et utilisateur (User)\n[Install] Moment du démarrage (WantedBy=multi-user.target)",
+    "commands": [
+      { "code": "sudo systemctl daemon-reload", "note": "Obligatoire après toute modification d'un fichier .service" }
+    ]
+  },
+  {
+    "id": "fs-inodes",
+    "category": "7. Stockage & Disques",
+    "title": "Les Inodes : Quand le disque est plein sans l'être",
+    "advanced": true,
+    "description": "Sous Linux, un fichier est composé de données (le contenu) et d'un Inode (métadonnées : droits, dates, emplacement sur le disque). Chaque partition a un nombre d'Inodes limité à sa création.\n\nSymptôme : L'erreur 'No space left on device' s'affiche, pourtant 'df -h' montre qu'il reste 50 Go libres. C'est parce que vous avez trop de tout petits fichiers (ex: des millions de fichiers de cache PHP) et que le quota d'Inodes a été atteint.",
+    "commands": [
+      { "code": "df -i", "note": "Vérifier le pourcentage d'Inodes utilisés sur les partitions" }
+    ],
+    "alert": "Si IUse% atteint 100%, vous ne pouvez plus créer aucun fichier, même s'il reste des Giga-octets d'espace disque disponible.",
+    "alertType": "info"
+  },
+  {
+    "id": "fs-links",
+    "category": "2. Fichiers & Dossiers",
+    "title": "Liens Physiques vs Liens Symboliques",
+    "description": "Linux propose deux types de raccourcis :\n- Symlink (Lien symbolique) : Créé avec 'ln -s'. C'est un simple pointeur vers le chemin du fichier original. Si l'original est supprimé, le lien est brisé (rouge).\n- Hardlink (Lien physique) : Créé avec 'ln' (sans -s). Il pointe directement sur l'Inode du disque. Même si le fichier original est supprimé, les données restent accessibles via le Hardlink.",
+    "commands": [
+      { "code": "ln -s /chemin/source.txt /chemin/raccourci.txt", "note": "Créer un lien symbolique (Le plus utilisé)" },
+      { "code": "ls -l", "note": "Les liens symboliques s'affichent avec un 'l' au début et une flèche '->'" }
+    ]
+  },
+  {
+    "id": "sec-acls",
+    "category": "3. Gestion des Droits",
+    "title": "Les ACLs (Droits granulaires)",
+    "advanced": true,
+    "description": "Les droits standards (chmod) ont une limite : un fichier n'a qu'un seul propriétaire et un seul groupe. Les ACLs (Access Control Lists) permettent de donner des droits spécifiques (rwx) à plusieurs utilisateurs distincts sur un même fichier.",
+    "commands": [
+      { "code": "getfacl fichier.txt", "note": "Lire les droits étendus d'un fichier" },
+      { "code": "setfacl -m u:jean:rw fichier.txt", "note": "Donner spécifiquement les droits Lecture/Écriture à 'jean'" },
+      { "code": "setfacl -x u:jean fichier.txt", "note": "Retirer les droits spécifiques de 'jean'" }
+    ],
+    "alert": "Si vous faites un 'ls -l', la présence d'un '+' à la fin des droits (ex: -rw-rw-r--+) indique que des ACLs sont appliquées sur ce fichier.",
+    "alertType": "info"
+  },
+  {
+    "id": "sys-boot",
+    "category": "11. Cœur du Système",
+    "title": "Le processus de Boot Linux",
+    "advanced": true,
+    "description": "Comprendre les 4 grandes étapes pour diagnostiquer un serveur qui ne démarre pas :\n1. BIOS/UEFI : Vérification matérielle (POST) et recherche du disque.\n2. Bootloader (GRUB) : Chargé en RAM, il affiche le menu et charge le noyau.\n3. Kernel (Noyau) & Initramfs : Initialise le matériel, monte le système de fichiers racine en lecture seule.\n4. Init (Systemd) : Le processus PID 1 démarre tous les services (réseau, ssh, interface graphique).",
+    "commands": []
+  },
+  {
+    "id": "bash-redirections",
+    "category": "2. Fichiers & Dossiers",
+    "title": "Les redirections (stdout, stderr)",
+    "description": "Linux possède 3 canaux de base : l'entrée standard (0=stdin), la sortie standard (1=stdout, l'affichage normal) et la sortie d'erreur (2=stderr). Les chevrons permettent de diriger ces flux.",
+    "commands": [
+      { "code": "ls -l > fichier.txt", "note": "Écrase le fichier avec le résultat de la commande" },
+      { "code": "ls -l >> fichier.txt", "note": "Ajoute (Append) le résultat à la fin du fichier" },
+      { "code": "find / -name \"secret\" 2> /dev/null", "note": "Envoie les messages d'erreur (2) dans le néant (/dev/null)" },
+      { "code": "script.sh > log.txt 2>&1", "note": "Le combo pro : Redirige les erreurs (2) vers la sortie standard (1), puis tout va dans le fichier" }
+    ]
+  },
+  {
+    "id": "sys-swap",
+    "category": "11. Cœur du Système",
+    "title": "Swap et OOM Killer",
+    "advanced": true,
+    "description": "Le Swap est une extension virtuelle de la RAM sur le disque dur. Il évite au serveur de planter immédiatement quand la RAM est pleine.\nCependant, si le Swap se remplit aussi, le noyau Linux active l'OOM Killer (Out Of Memory Killer) qui va abattre de force (Kill -9) le processus qui consomme le plus pour sauver le système (très souvent la base de données !).",
+    "commands": [
+      { "code": "swapon --show", "note": "Afficher l'état et l'utilisation du Swap" },
+      { "code": "sysctl vm.swappiness", "note": "Afficher la tendance du système à utiliser le Swap (0=Jamais, 100=Toujours)" }
+    ],
+    "alert": "Scénario de crise : Vous trouvez votre serveur web MySQL arrêté sans raison. Regardez dans '/var/log/syslog' ou via 'dmesg | grep oom', vous y verrez sûrement la trace du meurtre par l'OOM Killer.",
+    "alertType": "warning"
+  },
+  {
+    "id": "net-ports",
+    "category": "10. Réseau Avancé",
+    "title": "Les Ports Réseaux (TCP/UDP)",
+    "description": "Il existe 65 535 ports. Les 1024 premiers sont 'privilégiés' (nécessitent Root pour être mis en écoute). \n\nRappels essentiels :\n- TCP 22 : SSH (Admin)\n- TCP 80 / 443 : HTTP / HTTPS (Web)\n- TCP/UDP 53 : DNS (Résolution)\n- TCP 3306 / 5432 : MySQL / PostgreSQL (BDD)\n- TCP 21 : FTP",
+    "commands": [
+      { "code": "grep ssh /etc/services", "note": "Affiche le port officiel d'un service connu" }
+    ]
+  },
+  {
+    "id": "bash-env",
+    "category": "11. Cœur du Système",
+    "title": "Les variables d'environnement",
+    "description": "Les variables d'environnement (en majuscules) configurent le comportement du shell (langue, chemins des commandes, couleurs). La plus importante est $PATH, qui indique à Linux dans quels dossiers chercher quand vous tapez une commande (ex: 'ls' cherche dans '/usr/bin/').",
+    "commands": [
+      { "code": "printenv", "note": "Affiche toutes les variables de votre session" },
+      { "code": "echo $PATH", "note": "Affiche la liste des dossiers scannés pour exécuter les commandes" },
+      { "code": "export PATH=$PATH:/opt/mon_outil/bin", "note": "Ajoute un nouveau dossier au PATH (temporairement)" }
+    ]
+  }
+]

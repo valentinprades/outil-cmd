@@ -1,0 +1,419 @@
+[
+  {
+    "id": "tuto-prompt",
+    "category": "LifeHacks (Pratique & Fun)",
+    "title": "Pimper son terminal (Couleurs du Prompt)",
+    "difficulty": "Facile",
+    "description": "Changez la couleur de votre invite de commande (PS1) pour mieux repérer où vous tapez, surtout en mode root.",
+    "steps": [
+      {
+        "title": "Ouvrir le fichier de configuration",
+        "text": "Le prompt est défini par la variable d'environnement PS1 dans le fichier caché .bashrc de votre utilisateur.",
+        "command": "nano ~/.bashrc"
+      },
+      {
+        "title": "Ajouter la nouvelle variable PS1",
+        "text": "Allez tout à la fin du fichier et ajoutez cette ligne pour avoir un prompt vert émeraude élégant :",
+        "command": "export PS1='\\[\\e[1;32m\\]\\u@\\h:\\w\\$ \\[\\e[0m\\]'"
+      },
+      {
+        "title": "Appliquer les changements",
+        "text": "Rechargez le fichier .bashrc pour que les modifications prennent effet immédiatement.",
+        "command": "source ~/.bashrc"
+      }
+    ]
+  },
+  {
+    "id": "proc-dhcp",
+    "category": "Architecture (Avancé)",
+    "title": "Déployer un serveur DHCP",
+    "difficulty": "Intermédiaire",
+    "description": "Mise en place complète d'un serveur DHCP sous Debian (isc-dhcp-server) pour distribuer automatiquement des adresses IP sur votre réseau local.",
+    "steps": [
+      {
+        "title": "Étape 1 : Prérequis (IP Statique)",
+        "text": "Un serveur DHCP DOIT obligatoirement posséder une adresse IP statique. Vérifiez la configuration de votre interface réseau avant d'aller plus loin.\n\nSous Debian récent (avec '/etc/network/interfaces') : assurez-vous que votre interface (ex: eth0) a une IP fixe (ex: 192.168.1.10).",
+        "command": "ip a"
+      },
+      {
+        "title": "Étape 2 : Installer le paquet",
+        "text": "Mettez à jour vos dépôts et installez le paquet 'isc-dhcp-server'. Note : Il est normal que le service affiche une erreur juste après l'installation, car il n'est pas encore configuré.",
+        "command": "sudo apt update\nsudo apt install isc-dhcp-server -y"
+      },
+      {
+        "title": "Étape 3 : Définir l'interface d'écoute",
+        "text": "Indiquez au serveur sur quelle carte réseau il doit écouter les requêtes DHCP (les requêtes 'Discover' en broadcast). Ouvrez le fichier par défaut et modifiez la ligne 'INTERFACESv4'.",
+        "command": "sudo nano /etc/default/isc-dhcp-server\n\n# Modifiez cette ligne avec le nom de votre interface (ex: eth0, enp0s3) :\n# INTERFACESv4=\"eth0\""
+      },
+      {
+        "title": "Étape 4 : Configurer la plage (Subnet)",
+        "text": "C'est le cœur de la procédure. Sauvegardez le fichier d'origine, puis éditez-le pour déclarer votre sous-réseau, la plage d'IP distribuables (le 'range'), le routeur par défaut et les serveurs DNS.",
+        "command": "sudo cp /etc/dhcp/dhcpd.conf /etc/dhcp/dhcpd.conf.bak\nsudo nano /etc/dhcp/dhcpd.conf\n\n# Ajoutez à la fin du fichier :\nsubnet 192.168.1.0 netmask 255.255.255.0 {\n  range 192.168.1.100 192.168.1.200;\n  option routers 192.168.1.1;\n  option domain-name-servers 8.8.8.8, 1.1.1.1;\n  default-lease-time 600;\n  max-lease-time 7200;\n}"
+      },
+      {
+        "title": "Étape 5 : Faire une réservation d'IP (Optionnel)",
+        "text": "Si vous souhaitez qu'une imprimante ou un poste de direction obtienne toujours la même adresse IP, vous devez l'associer à son adresse MAC (toujours dans dhcpd.conf).",
+        "command": "# À ajouter dans /etc/dhcp/dhcpd.conf\nhost imprimante-compta {\n  hardware ethernet 00:11:22:33:44:55;\n  fixed-address 192.168.1.50;\n}"
+      },
+      {
+        "title": "Étape 6 : Relancer et valider",
+        "text": "Redémarrez le service pour prendre en compte la configuration. Le statut doit afficher 'active (running)' en vert.",
+        "command": "sudo systemctl restart isc-dhcp-server\nsudo systemctl status isc-dhcp-server"
+      },
+      {
+        "title": "Étape 7 : Dépannage (Troubleshooting)",
+        "text": "Si le statut est en erreur (failed), le fichier de configuration contient sûrement une faute de frappe (souvent un point-virgule oublié). Utilisez journalctl pour lire l'erreur exacte.",
+        "command": "sudo journalctl -xeu isc-dhcp-server"
+      }
+    ]
+  },
+  {
+    "id": "proc-ssh-harden",
+    "category": "Architecture (Avancé)",
+    "title": "Durcir (Sécuriser) un Serveur SSH",
+    "difficulty": "Avancé",
+    "description": "Les serveurs exposés sur Internet subissent des milliers d'attaques par force brute chaque jour. Voici la procédure standard pour sécuriser votre accès SSH.",
+    "steps": [
+      {
+        "title": "Étape 1 : Créer un utilisateur standard",
+        "text": "Il ne faut jamais se connecter directement en tant que 'root'. Créez un utilisateur standard (si ce n'est pas déjà fait) et donnez-lui les droits 'sudo'.",
+        "command": "sudo adduser admin_sys\nsudo usermod -aG sudo admin_sys"
+      },
+      {
+        "title": "Étape 2 : Envoyer votre clé SSH",
+        "text": "Depuis VOTRE PC (pas depuis le serveur), générez une paire de clés (si vous n'en avez pas) et envoyez la clé publique vers votre nouveau serveur.",
+        "command": "# Sur votre PC personnel :\nssh-keygen -t ed25519\nssh-copy-id admin_sys@ip_du_serveur"
+      },
+      {
+        "title": "Étape 3 : Éditer la configuration SSH",
+        "text": "Ouvrez le fichier de configuration du démon SSH sur le serveur pour appliquer les règles de durcissement.",
+        "command": "sudo nano /etc/ssh/sshd_config"
+      },
+      {
+        "title": "Étape 4 : Appliquer les règles",
+        "text": "Dans ce fichier, modifiez ou décommentez les lignes suivantes pour changer le port par défaut, interdire root, et interdire l'usage de mots de passe.",
+        "command": "Port 2222\nPermitRootLogin no\nPasswordAuthentication no\nPubkeyAuthentication yes"
+      },
+      {
+        "title": "Étape 5 : Relancer le service",
+        "text": "Redémarrez le service SSH pour appliquer les règles. Ne fermez pas votre terminal actuel ! Ouvrez un deuxième terminal pour tester la connexion, afin de ne pas vous retrouver enfermé dehors en cas d'erreur.",
+        "command": "sudo systemctl restart sshd"
+      }
+    ]
+  },
+  {
+    "id": "proc-dns-bind9",
+    "category": "Architecture (Avancé)",
+    "title": "Déployer un serveur DNS Interne (Bind9)",
+    "difficulty": "Avancé",
+    "description": "Installation d'un serveur DNS cache et autoritaire sous Debian pour résoudre les noms de votre infrastructure locale (ex: serveur-web.entreprise.lan).",
+    "steps": [
+      {
+        "title": "Étape 1 : Installation des paquets",
+        "text": "Installez le service Bind9 et les outils réseau DNS associés.",
+        "command": "sudo apt update && sudo apt install bind9 bind9utils bind9-doc dnsutils -y"
+      },
+      {
+        "title": "Étape 2 : Configuration des Redirecteurs (Forwarders)",
+        "text": "Indiquez à votre DNS vers qui se tourner s'il ne connaît pas l'adresse demandée (ex: google.com). On utilise souvent les DNS de Google ou Cloudflare.",
+        "command": "sudo nano /etc/bind/named.conf.options\n\n# Décommentez et complétez le bloc forwarders :\n# forwarders {\n#      8.8.8.8;\n#      1.1.1.1;\n# };"
+      },
+      {
+        "title": "Étape 3 : Déclaration de la zone",
+        "text": "Déclarez votre domaine local dans le fichier de configuration local.",
+        "command": "sudo nano /etc/bind/named.conf.local\n\n# Ajoutez à la fin :\nzone \"entreprise.lan\" {\n    type master;\n    file \"/etc/bind/db.entreprise.lan\";\n};"
+      },
+      {
+        "title": "Étape 4 : Création du fichier de zone",
+        "text": "Copiez le fichier modèle par défaut pour créer votre base de données d'enregistrements (A, CNAME).",
+        "command": "sudo cp /etc/bind/db.local /etc/bind/db.entreprise.lan\nsudo nano /etc/bind/db.entreprise.lan\n\n# Remplacez localhost par entreprise.lan.\n# Ajoutez un enregistrement à la fin :\n# webserver  IN  A  192.168.1.50"
+      },
+      {
+        "title": "Étape 5 : Validation et Relance",
+        "text": "Vérifiez la syntaxe de vos fichiers avant de relancer le service pour éviter toute coupure.",
+        "command": "sudo named-checkconf\nsudo named-checkzone entreprise.lan /etc/bind/db.entreprise.lan\nsudo systemctl restart bind9"
+      },
+      {
+        "title": "Étape 6 : Test de résolution",
+        "text": "Forcez votre serveur à utiliser son propre DNS pour tester la résolution de l'enregistrement que vous avez créé.",
+        "command": "dig @127.0.0.1 webserver.entreprise.lan"
+      }
+    ]
+  },
+  {
+    "id": "proc-ufw",
+    "category": "Sécurité (Réseau)",
+    "title": "Filtrage basique avec le Pare-feu UFW",
+    "difficulty": "Facile",
+    "description": "Configurer un pare-feu propre en 2 minutes sur Ubuntu/Debian pour bloquer tout le trafic entrant, sauf les ports autorisés explicitement.",
+    "steps": [
+      {
+        "title": "Étape 1 : Installation et Politique par défaut",
+        "text": "Installez UFW. La bonne pratique de sécurité (Default Deny) consiste à interdire toute connexion entrante et autoriser toute connexion sortante.",
+        "command": "sudo apt install ufw -y\nsudo ufw default deny incoming\nsudo ufw default allow outgoing"
+      },
+      {
+        "title": "Étape 2 : Autoriser le port SSH (CRITIQUE)",
+        "text": "Ne démarrez jamais le pare-feu avant d'avoir autorisé le SSH (port 22), sinon votre session actuelle sera coupée et vous perdrez l'accès au serveur !",
+        "command": "sudo ufw allow 22/tcp\n# Ou votre port personnalisé si modifié (ex: sudo ufw allow 2222/tcp)"
+      },
+      {
+        "title": "Étape 3 : Autoriser les autres services",
+        "text": "Ouvrez les ports pour les services hébergés sur cette machine (ex: Serveur Web).",
+        "command": "sudo ufw allow 80/tcp\nsudo ufw allow 443/tcp"
+      },
+      {
+        "title": "Étape 4 : Activation",
+        "text": "Activez le pare-feu (validez avec 'y' lorsque UFW vous prévient que cela peut couper le SSH).",
+        "command": "sudo ufw enable"
+      },
+      {
+        "title": "Étape 5 : Vérification",
+        "text": "Affichez l'état des règles actives. L'option 'numbered' permet d'avoir le numéro de la règle si vous devez en supprimer une plus tard (ex: sudo ufw delete 2).",
+        "command": "sudo ufw status numbered"
+      }
+    ]
+  },
+  {
+    "id": "proc-fail2ban",
+    "category": "Sécurité (Réseau)",
+    "title": "Bloquer les attaques Brute-Force (Fail2Ban)",
+    "difficulty": "Intermédiaire",
+    "description": "Installer et configurer Fail2Ban pour bannir automatiquement les adresses IP qui tentent des mots de passe erronés à répétition sur SSH.",
+    "steps": [
+      {
+        "title": "Étape 1 : Installation",
+        "text": "Installer le démon Fail2Ban.",
+        "command": "sudo apt update && sudo apt install fail2ban -y"
+      },
+      {
+        "title": "Étape 2 : Création du fichier local",
+        "text": "Ne modifiez jamais le fichier jail.conf, car il est écrasé lors des mises à jour. Copiez-le vers jail.local.",
+        "command": "sudo cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local"
+      },
+      {
+        "title": "Étape 3 : Configuration de la prison (Jail) SSH",
+        "text": "Éditez le fichier local, trouvez la section [sshd] et activez-la avec vos critères de bannissement.",
+        "command": "sudo nano /etc/fail2ban/jail.local\n\n# Dans la section [sshd], ajoutez/modifiez :\n# enabled = true\n# port = ssh\n# logpath = %(sshd_log)s\n# maxretry = 3\n# bantime = 1h"
+      },
+      {
+        "title": "Étape 4 : Application",
+        "text": "Redémarrez le service pour que Fail2Ban commence à analyser les logs SSH et active ses prisons.",
+        "command": "sudo systemctl restart fail2ban\nsudo systemctl enable fail2ban"
+      },
+      {
+        "title": "Étape 5 : Superviser les bannissements",
+        "text": "Vérifiez que la prison SSH est bien active et consultez le nombre d'IP actuellement bannies.",
+        "command": "sudo fail2ban-client status sshd"
+      }
+    ]
+  },
+  {
+    "id": "proc-samba",
+    "category": "Stockage & Partage",
+    "title": "Créer un partage réseau (Samba)",
+    "difficulty": "Intermédiaire",
+    "description": "Mise en place d'un serveur de fichiers SMB compatible Windows pour permettre aux utilisateurs d'accéder à un dossier partagé avec authentification.",
+    "steps": [
+      {
+        "title": "Étape 1 : Installation et Préparation",
+        "text": "Installez le serveur Samba et créez le dossier qui servira de point de partage.",
+        "command": "sudo apt install samba -y\nsudo mkdir -p /srv/samba/partage_rh\nsudo chown -R nobody:nogroup /srv/samba/partage_rh\nsudo chmod -R 777 /srv/samba/partage_rh"
+      },
+      {
+        "title": "Étape 2 : Configuration du partage",
+        "text": "Ajoutez la définition de votre dossier à la fin du fichier de configuration global de Samba.",
+        "command": "sudo nano /etc/samba/smb.conf\n\n# Ajoutez ceci à la fin :\n[Partage_RH]\npath = /srv/samba/partage_rh\nbrowseable = yes\nread only = no\nvalid users = paul"
+      },
+      {
+        "title": "Étape 3 : Création de l'utilisateur Samba",
+        "text": "Samba maintient sa propre base de mots de passe. L'utilisateur doit d'abord exister sous Linux, puis être ajouté à Samba.",
+        "command": "sudo useradd -M -s /sbin/nologin paul\nsudo smbpasswd -a paul\n# (Saisissez le mot de passe réseau pour Paul)"
+      },
+      {
+        "title": "Étape 4 : Validation et Redémarrage",
+        "text": "Vérifiez la syntaxe avec testparm, puis relancez le service.",
+        "command": "testparm\nsudo systemctl restart smbd nmbd"
+      }
+    ]
+  },
+  {
+    "id": "proc-lvm",
+    "category": "Stockage & Partage",
+    "title": "Ajouter un disque et étendre LVM",
+    "difficulty": "Avancé",
+    "description": "Procédure critique : Vous avez ajouté un nouveau disque physique (ex: sdb) à votre serveur, et vous souhaitez l'utiliser pour agrandir une partition logique existante sans l'éteindre.",
+    "steps": [
+      {
+        "title": "Étape 1 : Identifier le nouveau disque",
+        "text": "Repérez le nom de votre nouveau disque physique (souvent /dev/sdb ou /dev/sdc).",
+        "command": "lsblk"
+      },
+      {
+        "title": "Étape 2 : Créer le Volume Physique (PV)",
+        "text": "Initialisez le disque brut pour qu'il soit compréhensible par LVM.",
+        "command": "sudo pvcreate /dev/sdb"
+      },
+      {
+        "title": "Étape 3 : Étendre le Groupe de Volumes (VG)",
+        "text": "Cherchez le nom de votre Groupe de Volumes actuel (VG Name avec 'vgdisplay'), puis ajoutez-y le nouveau disque.",
+        "command": "sudo vgdisplay\nsudo vgextend nom_de_mon_vg /dev/sdb"
+      },
+      {
+        "title": "Étape 4 : Étendre le Volume Logique (LV)",
+        "text": "Trouvez le chemin exact de la partition logique à agrandir (ex: /dev/ubuntu-vg/ubuntu-lv avec 'lvdisplay'), et donnez-lui 100% de l'espace libre récupéré.",
+        "command": "sudo lvextend -l +100%FREE /dev/nom_de_mon_vg/nom_de_mon_lv"
+      },
+      {
+        "title": "Étape 5 : Redimensionner le système de fichiers (FS)",
+        "text": "Le volume est plus grand, mais le format de fichier (ext4) l'ignore encore. Il faut l'étendre à chaud.",
+        "command": "sudo resize2fs /dev/nom_de_mon_vg/nom_de_mon_lv"
+      }
+    ]
+  },
+  {
+    "id": "proc-ntp",
+    "category": "Architecture (Avancé)",
+    "title": "Synchronisation du temps (Chrony)",
+    "difficulty": "Facile",
+    "description": "Maintenir l'horloge du serveur à l'heure exacte est vital, notamment pour les certificats SSL, les logs et l'authentification Kerberos. Chrony est l'outil moderne qui remplace ntp.",
+    "steps": [
+      {
+        "title": "Étape 1 : Installation",
+        "text": "Installez le daemon chrony.",
+        "command": "sudo apt update && sudo apt install chrony -y"
+      },
+      {
+        "title": "Étape 2 : Configuration des serveurs NTP",
+        "text": "Éditez la configuration pour définir les serveurs de temps (par exemple, ceux du projet pool.ntp.org de votre pays).",
+        "command": "sudo nano /etc/chrony/chrony.conf\n\n# Modifiez la liste des 'pool' ou 'server' :\n# pool fr.pool.ntp.org iburst"
+      },
+      {
+        "title": "Étape 3 : Application et Vérification",
+        "text": "Redémarrez le service, puis vérifiez avec qui le serveur discute et la précision de la synchronisation.",
+        "command": "sudo systemctl restart chronyd\nchronyc sources\nchronyc tracking"
+      }
+    ]
+  },
+  {
+    "id": "proc-wireguard",
+    "category": "Architecture (Avancé)",
+    "title": "Serveur VPN (WireGuard)",
+    "difficulty": "Avancé",
+    "description": "Installer WireGuard, le protocole VPN moderne, très performant et intégré directement au noyau Linux.",
+    "steps": [
+      {
+        "title": "Étape 1 : Installation et Génération de clés",
+        "text": "Installez WireGuard, puis générez la paire de clés (Privée/Publique) du serveur.",
+        "command": "sudo apt install wireguard -y\ncd /etc/wireguard\nwg genkey | sudo tee privatekey | wg pubkey | sudo tee publickey"
+      },
+      {
+        "title": "Étape 2 : Configuration du tunnel",
+        "text": "Créez le fichier d'interface wg0.conf. Vous aurez besoin du contenu de votre fichier 'privatekey' généré à l'étape 1.",
+        "command": "sudo nano /etc/wireguard/wg0.conf\n\n[Interface]\nAddress = 10.8.0.1/24\nListenPort = 51820\nPrivateKey = VOTRE_CLE_PRIVEE_ICI"
+      },
+      {
+        "title": "Étape 3 : Activation du routage (IP Forwarding)",
+        "text": "Pour que les clients VPN puissent accéder à Internet ou au reste du réseau à travers le VPN, le serveur doit agir comme un routeur.",
+        "command": "sudo nano /etc/sysctl.conf\n# Décommentez la ligne :\n# net.ipv4.ip_forward=1\n\nsudo sysctl -p"
+      },
+      {
+        "title": "Étape 4 : Lancement de l'interface",
+        "text": "Montez l'interface virtuelle wg0 et vérifiez son statut.",
+        "command": "sudo wg-quick up wg0\nsudo wg show"
+      },
+      {
+        "title": "Étape 5 : Lancement automatique au boot",
+        "text": "Activez le service systemd associé à cette interface pour qu'elle remonte au redémarrage.",
+        "command": "sudo systemctl enable wg-quick@wg0"
+      }
+    ]
+  },
+  {
+    "id": "proc-apache-ssl",
+    "category": "Services (Web)",
+    "title": "Certificat HTTPS (Certbot / Let's Encrypt)",
+    "difficulty": "Facile",
+    "description": "Sécuriser un serveur Web Apache avec un certificat HTTPS gratuit et valide fourni par Let's Encrypt.",
+    "steps": [
+      {
+        "title": "Étape 1 : Prérequis",
+        "text": "Votre domaine (ex: www.mondomaine.fr) doit déjà pointer sur l'IP publique de ce serveur, et le port 80 doit être ouvert et accessible depuis Internet.",
+        "command": "ping www.mondomaine.fr"
+      },
+      {
+        "title": "Étape 2 : Installation du client",
+        "text": "Installez certbot et son plugin Apache.",
+        "command": "sudo apt update && sudo apt install certbot python3-certbot-apache -y"
+      },
+      {
+        "title": "Étape 3 : Génération et Installation magique",
+        "text": "Lancez l'assistant. Il va lire vos VirtualHosts Apache, vous demander quel domaine sécuriser, créer le certificat et modifier Apache pour forcer la redirection HTTPS.",
+        "command": "sudo certbot --apache"
+      },
+      {
+        "title": "Étape 4 : Vérifier le renouvellement auto",
+        "text": "Les certificats durent 90 jours. Certbot crée une tâche Cron pour les renouveler automatiquement. Testez que cette tâche fonctionne.",
+        "command": "sudo certbot renew --dry-run"
+      }
+    ]
+  },
+  {
+    "id": "proc-docker",
+    "category": "Architecture (Avancé)",
+    "title": "Installer Docker Engine (Méthode officielle)",
+    "difficulty": "Intermédiaire",
+    "description": "La méthode recommandée (ajout des dépôts officiels Docker) plutôt que le paquet 'docker.io' de Debian/Ubuntu qui est souvent obsolète.",
+    "steps": [
+      {
+        "title": "Étape 1 : Nettoyage et Prérequis",
+        "text": "Désinstallez les vieilles versions éventuelles et installez les paquets permettant à apt d'utiliser des dépôts HTTPS.",
+        "command": "sudo apt-get remove docker docker-engine docker.io containerd runc\nsudo apt-get update\nsudo apt-get install ca-certificates curl gnupg lsb-release -y"
+      },
+      {
+        "title": "Étape 2 : Ajout de la clé GPG Officielle",
+        "text": "Téléchargez et ajoutez la clé de sécurité de Docker pour certifier l'authenticité des paquets téléchargés.",
+        "command": "sudo mkdir -m 0755 -p /etc/apt/keyrings\ncurl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg"
+      },
+      {
+        "title": "Étape 3 : Ajout du dépôt",
+        "text": "Ajoutez le dépôt officiel de Docker à vos sources de logiciels.",
+        "command": "echo \"deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable\" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null"
+      },
+      {
+        "title": "Étape 4 : Installation",
+        "text": "Mettez à jour apt avec le nouveau dépôt, puis installez le moteur Docker et Docker Compose.",
+        "command": "sudo apt-get update\nsudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y"
+      },
+      {
+        "title": "Étape 5 : Droits d'exécution",
+        "text": "Pour éviter de taper 'sudo' devant chaque commande docker, ajoutez votre utilisateur courant au groupe docker.",
+        "command": "sudo usermod -aG docker $USER\n# (Vous devrez vous déconnecter et vous reconnecter pour que cela prenne effet)"
+      }
+    ]
+  },
+  {
+    "id": "proc-nfs",
+    "category": "Stockage & Partage",
+    "title": "Serveur de fichiers NFS",
+    "difficulty": "Facile",
+    "description": "NFS (Network File System) est le protocole de partage de fichiers natif de Linux. Plus rapide que Samba (SMB) pour faire communiquer deux serveurs Linux entre eux.",
+    "steps": [
+      {
+        "title": "Étape 1 : Préparation du Serveur",
+        "text": "Installez le serveur NFS et créez le dossier à partager avec les bons droits (pour éviter les problèmes d'accès root).",
+        "command": "sudo apt update && sudo apt install nfs-kernel-server -y\nsudo mkdir -p /var/nfs/general\nsudo chown nobody:nogroup /var/nfs/general"
+      },
+      {
+        "title": "Étape 2 : Configuration de l'Export",
+        "text": "Le fichier 'exports' détermine quels dossiers sont partagés et à quelles adresses IP clientes ils sont autorisés.",
+        "command": "sudo nano /etc/exports\n\n# Autoriser un client spécifique (ex: 192.168.1.100) en Lecture/Écriture (rw) :\n# /var/nfs/general    192.168.1.100(rw,sync,no_subtree_check)"
+      },
+      {
+        "title": "Étape 3 : Application et Pare-feu",
+        "text": "Faites relire le fichier par le système, relancez le service, et autorisez le protocole NFS dans UFW.",
+        "command": "sudo exportfs -a\nsudo systemctl restart nfs-kernel-server\nsudo ufw allow from 192.168.1.100 to any port nfs"
+      }
+    ]
+  }
+]

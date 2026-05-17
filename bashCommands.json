@@ -1,0 +1,540 @@
+[
+  {
+    "name": "ls",
+    "category": "Fichiers & Dossiers",
+    "tags": ["liste", "contenu", "répertoire", "explorer"],
+    "description": "Liste le contenu d'un répertoire.",
+    "longDesc": "La commande 'ls' (list) est utilisée pour afficher les fichiers et sous-dossiers contenus dans un répertoire. C'est l'une des commandes les plus fondamentales pour naviguer dans l'arborescence Linux.",
+    "args": [
+      { "flag": "-l", "desc": "Format long : affiche les permissions, le propriétaire, la taille et la date." },
+      { "flag": "-a", "desc": "Affiche tous les fichiers, y compris les fichiers cachés (commençant par un point)." },
+      { "flag": "-h", "desc": "Affiche les tailles dans un format lisible par l'homme (K, M, G)." }
+    ],
+    "syntax": "ls [options] [chemin]",
+    "example": "ls -lah /var/log"
+  },
+  {
+    "name": "cd",
+    "category": "Navigation",
+    "tags": ["dossier", "déplacement", "répertoire"],
+    "description": "Change le répertoire de travail actuel.",
+    "longDesc": "La commande 'cd' (change directory) permet de se déplacer dans l'arborescence des fichiers du système d'exploitation.",
+    "args": [
+      { "flag": "..", "desc": "Remonte au répertoire parent." },
+      { "flag": "-", "desc": "Retourne au répertoire précédent." },
+      { "flag": "~", "desc": "Va dans le répertoire personnel (Home) de l'utilisateur actuel." }
+    ],
+    "syntax": "cd [chemin]",
+    "example": "cd /etc/nginx"
+  },
+  {
+    "name": "chmod",
+    "category": "Droits & Permissions",
+    "tags": ["sécurité", "droits", "permissions", "utilisateur"],
+    "description": "Modifie les permissions d'accès aux fichiers et dossiers.",
+    "longDesc": "La commande 'chmod' (change mode) permet de modifier les permissions de lecture (r), d'écriture (w) et d'exécution (x) pour le propriétaire, le groupe et les autres utilisateurs.",
+    "args": [
+      { "flag": "-R", "desc": "Applique les modifications de manière récursive à tous les fichiers et sous-dossiers." },
+      { "flag": "+x", "desc": "Rend le fichier exécutable." },
+      { "flag": "755", "desc": "Propriétaire: rwx (7), Groupe: r-x (5), Autres: r-x (5)." }
+    ],
+    "syntax": "chmod [options] mode fichier",
+    "example": "chmod -R 755 /var/www/html"
+  },
+  {
+    "name": "grep",
+    "category": "Recherche & Texte",
+    "tags": ["recherche", "texte", "filtre", "regex"],
+    "description": "Recherche une chaîne de caractères dans un texte ou un fichier.",
+    "longDesc": "La commande 'grep' (Global Regular Expression Print) filtre les lignes correspondant à un motif donné. Elle est extrêmement puissante lorsqu'elle est combinée avec des expressions régulières ou le système de 'pipes' (|).",
+    "args": [
+      { "flag": "-i", "desc": "Ignore la casse (ne distingue pas majuscules/minuscules)." },
+      { "flag": "-v", "desc": "Inverse la recherche (affiche les lignes qui NE contiennent PAS le motif)." },
+      { "flag": "-r", "desc": "Recherche récursivement dans tous les fichiers d'un répertoire." }
+    ],
+    "syntax": "grep [options] 'motif' fichier",
+    "example": "grep -i 'error' /var/log/syslog"
+  },
+  {
+    "name": "useradd",
+    "category": "Administration",
+    "tags": ["utilisateur", "compte", "admin", "création"],
+    "description": "Crée un nouveau compte utilisateur sur le système.",
+    "longDesc": "La commande 'useradd' (ou 'adduser' sur certaines distributions) est utilisée par l'administrateur (root) pour provisionner de nouveaux comptes utilisateurs locaux.",
+    "args": [
+      { "flag": "-m", "desc": "Crée le répertoire personnel (home) de l'utilisateur." },
+      { "flag": "-s", "desc": "Définit le shell par défaut de l'utilisateur (ex: /bin/bash)." },
+      { "flag": "-G", "desc": "Ajoute l'utilisateur à des groupes supplémentaires (séparés par des virgules)." }
+    ],
+    "syntax": "useradd [options] nom_utilisateur",
+    "example": "useradd -m -s /bin/bash -G sudo,docker jdupont"
+  },
+  {
+    "name": "cp",
+    "category": "Fichiers & Dossiers",
+    "tags": ["copier", "fichiers", "dossiers", "sauvegarde"],
+    "description": "Copie des fichiers et des répertoires.",
+    "longDesc": "La commande 'cp' (copy) permet de dupliquer un ou plusieurs fichiers ou répertoires d'un emplacement à un autre.",
+    "args": [
+      { "flag": "-r", "desc": "Copie de manière récursive (indispensable pour les dossiers)." },
+      { "flag": "-i", "desc": "Demande une confirmation avant d'écraser un fichier existant (interactif)." },
+      { "flag": "-v", "desc": "Mode verbeux : affiche ce qui est en train d'être copié." }
+    ],
+    "syntax": "cp [options] source destination",
+    "example": "cp -r /var/www/html /backup/html_backup"
+  },
+  {
+    "name": "rm",
+    "category": "Fichiers & Dossiers",
+    "tags": ["supprimer", "effacer", "fichiers", "dossiers"],
+    "description": "Supprime des fichiers ou des répertoires.",
+    "longDesc": "La commande 'rm' (remove) supprime définitivement des fichiers ou des répertoires. Attention, par défaut, il n'y a pas de corbeille !",
+    "args": [
+      { "flag": "-r", "desc": "Supprime de manière récursive (indispensable pour les dossiers)." },
+      { "flag": "-f", "desc": "Force la suppression sans demander de confirmation (très dangereux)." },
+      { "flag": "-i", "desc": "Demande une confirmation avant chaque suppression." }
+    ],
+    "syntax": "rm [options] fichier_ou_dossier",
+    "example": "rm -rf /tmp/vieux_fichiers"
+  },
+  {
+    "name": "systemctl",
+    "category": "Administration",
+    "tags": ["service", "démarrage", "arrêt", "statut", "daemon"],
+    "description": "Contrôle le système systemd et le gestionnaire de services.",
+    "longDesc": "La commande 'systemctl' est l'outil central pour gérer les services (démarrer, arrêter, redémarrer) sur les distributions Linux modernes utilisant systemd.",
+    "args": [
+      { "flag": "status", "desc": "Affiche l'état actuel d'un service." },
+      { "flag": "start / stop", "desc": "Démarre ou arrête un service." },
+      { "flag": "enable / disable", "desc": "Active ou désactive le lancement d'un service au démarrage du système." }
+    ],
+    "syntax": "systemctl [commande] nom_du_service",
+    "example": "systemctl status apache2"
+  },
+  {
+    "name": "ip",
+    "category": "Réseau",
+    "tags": ["réseau", "ip", "interface", "routage"],
+    "description": "Affiche et manipule le routage, les périphériques, les interfaces et les tunnels réseau.",
+    "longDesc": "Remplaçant la suite net-tools (ifconfig, route...), 'ip' est l'outil standard sous Linux pour gérer l'ensemble des paramètres réseau.",
+    "args": [
+      { "flag": "a (addr)", "desc": "Affiche les adresses IP de toutes les interfaces." },
+      { "flag": "r (route)", "desc": "Affiche la table de routage." },
+      { "flag": "link", "desc": "Affiche l'état des interfaces réseau (up/down, MAC)." }
+    ],
+    "syntax": "ip [options] objet {commande}",
+    "example": "ip a"
+  },
+  {
+    "name": "ping",
+    "category": "Réseau",
+    "tags": ["réseau", "ping", "test", "connectivité"],
+    "description": "Envoie des requêtes ICMP ECHO_REQUEST à un hôte réseau.",
+    "longDesc": "La commande 'ping' teste la connectivité réseau entre votre machine et un hôte cible et mesure le temps de réponse.",
+    "args": [
+      { "flag": "-c", "desc": "Nombre de requêtes à envoyer (count) avant de s'arrêter." },
+      { "flag": "-i", "desc": "Délai en secondes entre chaque requête (interval)." }
+    ],
+    "syntax": "ping [options] destination",
+    "example": "ping -c 4 8.8.8.8"
+  },
+  {
+    "name": "netstat",
+    "category": "Réseau",
+    "tags": ["réseau", "ports", "statistiques", "connexions"],
+    "description": "Affiche les connexions réseau, les tables de routage, et les ports en écoute.",
+    "longDesc": "Bien qu'obsolète (remplacé par 'ss'), 'netstat' reste très présent. Il permet de voir quels ports sont ouverts et qui s'y connecte.",
+    "args": [
+      { "flag": "-t", "desc": "Affiche les connexions TCP." },
+      { "flag": "-u", "desc": "Affiche les connexions UDP." },
+      { "flag": "-l", "desc": "Affiche les ports en écoute (listening)." },
+      { "flag": "-p", "desc": "Affiche le PID et le nom du programme à qui appartient le socket." }
+    ],
+    "syntax": "netstat [options]",
+    "example": "sudo netstat -tlnp"
+  },
+  {
+    "name": "top",
+    "category": "Processus & Système",
+    "tags": ["processus", "système", "monitor", "cpu", "ram"],
+    "description": "Affiche dynamiquement les processus Linux en temps réel.",
+    "longDesc": "Fournit une vue dynamique du système en fonctionnement. Il affiche un résumé de l'état du système et une liste des processus triés par utilisation de CPU.",
+    "args": [
+      { "flag": "-u", "desc": "Affiche uniquement les processus d'un utilisateur spécifique." },
+      { "flag": "-d", "desc": "Spécifie le délai de rafraîchissement (en secondes)." }
+    ],
+    "syntax": "top [options]",
+    "example": "top -u root"
+  },
+  {
+    "name": "htop",
+    "category": "Processus & Système",
+    "tags": ["processus", "système", "monitor", "cpu", "ram", "interactif"],
+    "description": "Visualiseur de processus interactif (version améliorée de top).",
+    "longDesc": "Une alternative plus moderne et colorée à 'top', qui permet de naviguer dans la liste des processus, de les filtrer et de les tuer facilement.",
+    "args": [
+      { "flag": "F3", "desc": "Rechercher un processus (dans l'interface)." },
+      { "flag": "F9", "desc": "Tuer un processus (kill)." },
+      { "flag": "F10", "desc": "Quitter htop." }
+    ],
+    "syntax": "htop",
+    "example": "htop"
+  },
+  {
+    "name": "ps",
+    "category": "Processus & Système",
+    "tags": ["processus", "statut", "pid"],
+    "description": "Donne un instantané des processus en cours d'exécution.",
+    "longDesc": "Contrairement à top, 'ps' (process status) n'est pas dynamique. Il affiche l'état des processus au moment exact où la commande est lancée.",
+    "args": [
+      { "flag": "aux", "desc": "Combinaison standard : (a) tous les utilisateurs, (u) format complet, (x) avec ou sans terminal." }
+    ],
+    "syntax": "ps [options]",
+    "example": "ps aux | grep apache"
+  },
+  {
+    "name": "kill",
+    "category": "Processus & Système",
+    "tags": ["processus", "tuer", "arrêter", "signal"],
+    "description": "Envoie un signal à un processus (généralement pour l'arrêter).",
+    "longDesc": "La commande 'kill' permet de mettre fin à des processus récalcitrants en envoyant le signal TERM (15, demande polie) ou KILL (9, forçage immédiat).",
+    "args": [
+      { "flag": "-9", "desc": "Force l'arrêt immédiat du processus sans sauvegarde (SIGKILL, dangereux)." },
+      { "flag": "-15", "desc": "Demande un arrêt propre au processus (SIGTERM, par défaut)." }
+    ],
+    "syntax": "kill [signal] PID",
+    "example": "kill -9 1234"
+  },
+  {
+    "name": "find",
+    "category": "Fichiers & Dossiers",
+    "tags": ["recherche", "fichiers", "dossiers"],
+    "description": "Recherche des fichiers dans une arborescence de répertoires.",
+    "longDesc": "'find' est l'outil de recherche de fichiers le plus puissant de Linux. Il peut chercher par nom, taille, date de modification, propriétaire, etc.",
+    "args": [
+      { "flag": "-name", "desc": "Recherche par nom exact de fichier (sensible à la casse)." },
+      { "flag": "-iname", "desc": "Recherche par nom (insensible à la casse)." },
+      { "flag": "-type", "desc": "Filtre par type : f (fichier), d (dossier)." }
+    ],
+    "syntax": "find [chemin] [conditions]",
+    "example": "find /var/log -type f -name \"*.log\""
+  },
+  {
+    "name": "tar",
+    "category": "Fichiers & Dossiers",
+    "tags": ["archive", "compression", "tar", "zip", "sauvegarde"],
+    "description": "Gère la création et l'extraction d'archives.",
+    "longDesc": "L'outil standard d'archivage (Tape ARchive). Il regroupe plusieurs fichiers en un seul (.tar) et peut les compresser (souvent avec gzip).",
+    "args": [
+      { "flag": "-c", "desc": "Crée une nouvelle archive." },
+      { "flag": "-x", "desc": "Extrait une archive existante." },
+      { "flag": "-z", "desc": "Utilise l'algorithme de compression gzip (crée des .tar.gz)." },
+      { "flag": "-f", "desc": "Spécifie le nom du fichier d'archive." }
+    ],
+    "syntax": "tar [options] fichier_archive [fichiers...]",
+    "example": "tar -czvf backup.tar.gz /var/www/html"
+  },
+  {
+    "name": "df",
+    "category": "Processus & Système",
+    "tags": ["disque", "espace", "stockage", "partition"],
+    "description": "Rapporte l'utilisation de l'espace disque des systèmes de fichiers.",
+    "longDesc": "La commande 'df' (disk free) est essentielle pour vérifier qu'une partition système n'est pas pleine à 100%.",
+    "args": [
+      { "flag": "-h", "desc": "Affiche les tailles dans un format lisible (Go, Mo, Ko)." },
+      { "flag": "-T", "desc": "Affiche le type de système de fichiers (ext4, tmpfs, etc.)." }
+    ],
+    "syntax": "df [options] [point_de_montage]",
+    "example": "df -h"
+  },
+  {
+    "name": "awk",
+    "category": "Recherche & Texte",
+    "tags": ["texte", "colonnes", "filtre", "script"],
+    "description": "Langage de traitement de motifs et d'analyse de texte.",
+    "longDesc": "Souvent utilisé en ligne de commande pour extraire des colonnes spécifiques d'un texte ou d'un retour de commande en utilisant le 'pipe' (|).",
+    "args": [
+      { "flag": "-F", "desc": "Spécifie le caractère séparateur de champs (ex: -F: pour le fichier /etc/passwd)." }
+    ],
+    "syntax": "awk 'script' [fichiers]",
+    "example": "awk -F: '{print $1}' /etc/passwd"
+  },
+  {
+    "name": "curl",
+    "category": "Réseau",
+    "tags": ["web", "télécharger", "api", "http"],
+    "description": "Outil pour transférer des données depuis ou vers un serveur.",
+    "longDesc": "Indispensable pour tester des API REST, télécharger des scripts ou vérifier les en-têtes HTTP d'un site web.",
+    "args": [
+      { "flag": "-I", "desc": "Ne récupère que les en-têtes HTTP (utile pour voir si un site répond 200 OK)." },
+      { "flag": "-O", "desc": "Enregistre le fichier avec le même nom que sur le serveur." },
+      { "flag": "-L", "desc": "Suit les redirections (utile si l'URL mène vers une page de redirection)." }
+    ],
+    "syntax": "curl [options] [URL]",
+    "example": "curl -I https://google.com"
+  },
+  {
+    "name": "ss",
+    "category": "Réseau",
+    "tags": ["réseau", "ports", "sockets", "netstat"],
+    "advanced": true,
+    "description": "Utilitaire pour investiguer les sockets réseaux (remplaçant de netstat).",
+    "longDesc": "Plus rapide et détaillé que netstat, 'ss' permet de voir les connexions TCP/UDP établies et les ports en écoute sur votre serveur.",
+    "args": [
+      { "flag": "-t", "desc": "Affiche les sockets TCP." },
+      { "flag": "-u", "desc": "Affiche les sockets UDP." },
+      { "flag": "-l", "desc": "Affiche les sockets en écoute (listening)." },
+      { "flag": "-n", "desc": "Ne résout pas les noms (affiche les IP et ports en numérique, beaucoup plus rapide)." }
+    ],
+    "syntax": "ss [options]",
+    "example": "ss -tln"
+  },
+  {
+    "name": "dig",
+    "category": "Réseau",
+    "tags": ["dns", "résolution", "nslookup", "domaine"],
+    "advanced": true,
+    "description": "Outil d'interrogation des serveurs de noms DNS.",
+    "longDesc": "Permet de diagnostiquer des problèmes de DNS en demandant spécifiquement un type d'enregistrement (A, MX, TXT) à un serveur particulier.",
+    "args": [
+      { "flag": "+short", "desc": "N'affiche que l'adresse IP en réponse, sans les détails verbeux." },
+      { "flag": "@serveur", "desc": "Permet de spécifier à quel serveur DNS poser la question (ex: @8.8.8.8)." }
+    ],
+    "syntax": "dig [@serveur] [domaine] [type]",
+    "example": "dig @8.8.8.8 google.com MX"
+  },
+  {
+    "name": "sed",
+    "category": "Recherche & Texte",
+    "tags": ["texte", "remplacer", "flux", "regex"],
+    "advanced": true,
+    "description": "Éditeur de flux pour filtrer et transformer du texte.",
+    "longDesc": "Idéal pour remplacer des mots dans un fichier de configuration en une seule ligne de commande, sans ouvrir d'éditeur interactif.",
+    "args": [
+      { "flag": "-i", "desc": "Modifie le fichier directement sur place (in-place)." },
+      { "flag": "s/ancien/nouveau/g", "desc": "La syntaxe magique : s pour substituer, g pour le faire globalement sur la ligne." }
+    ],
+    "syntax": "sed [options] 'script' [fichier]",
+    "example": "sed -i 's/Port 22/Port 2222/g' /etc/ssh/sshd_config"
+  },
+  {
+    "name": "tail",
+    "category": "Fichiers & Dossiers",
+    "tags": ["fichiers", "logs", "fin", "lecture"],
+    "description": "Affiche la fin d'un fichier (particulièrement utile pour les logs).",
+    "longDesc": "Au lieu d'ouvrir un énorme fichier de log avec 'cat' ou 'nano', 'tail' permet de ne lire que les dernières lignes (les plus récentes).",
+    "args": [
+      { "flag": "-n 50", "desc": "Affiche les 50 dernières lignes (10 par défaut)." },
+      { "flag": "-f", "desc": "Follow : garde le fichier ouvert et affiche les nouvelles lignes en temps réel." }
+    ],
+    "syntax": "tail [options] [fichier]",
+    "example": "tail -f /var/log/syslog"
+  },
+  {
+    "name": "cat",
+    "category": "Fichiers & Dossiers",
+    "tags": ["lire", "afficher", "concaténer", "texte"],
+    "description": "Concatène et affiche le contenu de fichiers sur la sortie standard.",
+    "longDesc": "La commande la plus basique pour lire le contenu d'un fichier texte entier directement dans le terminal.",
+    "args": [
+      { "flag": "-n", "desc": "Numérote toutes les lignes affichées." }
+    ],
+    "syntax": "cat [fichier]",
+    "example": "cat /etc/os-release"
+  },
+  {
+    "name": "free",
+    "category": "Processus & Système",
+    "tags": ["mémoire", "ram", "swap", "ressources"],
+    "description": "Affiche la quantité de mémoire libre et utilisée dans le système.",
+    "longDesc": "Permet de vérifier d'un coup d'œil si le serveur manque de RAM ou s'il commence à utiliser la partition d'échange (Swap).",
+    "args": [
+      { "flag": "-h", "desc": "Affiche les valeurs en format lisible (Mo, Go)." },
+      { "flag": "-m", "desc": "Affiche les valeurs strictement en Mégaoctets." }
+    ],
+    "syntax": "free [options]",
+    "example": "free -h"
+  },
+  {
+    "name": "lsblk",
+    "category": "Processus & Système",
+    "tags": ["disques", "partitions", "stockage", "block"],
+    "advanced": true,
+    "description": "Liste les périphériques blocs (disques durs, clés USB).",
+    "longDesc": "Affiche une vue arborescente très claire de vos disques (sda, sdb), de leurs partitions (sda1, sda2) et de leurs points de montage.",
+    "args": [
+      { "flag": "-f", "desc": "Affiche également le type de système de fichiers (ext4, ntfs, etc.) et l'UUID." }
+    ],
+    "syntax": "lsblk [options]",
+    "example": "lsblk -f"
+  },
+  {
+    "name": "mount",
+    "category": "Administration",
+    "tags": ["disques", "monter", "stockage", "partitions"],
+    "advanced": true,
+    "description": "Monte un système de fichiers (rend un disque accessible).",
+    "longDesc": "Sous Linux, brancher un disque ne suffit pas. Il faut le 'monter' sur un dossier existant (souvent dans /mnt ou /media) pour y accéder.",
+    "args": [
+      { "flag": "-t", "desc": "Spécifie le type de système de fichiers (ex: -t cifs pour un partage Windows)." },
+      { "flag": "-o", "desc": "Passe des options spécifiques (ex: rw pour lecture/écriture)." }
+    ],
+    "syntax": "mount [périphérique] [dossier_cible]",
+    "example": "sudo mount /dev/sdb1 /mnt/cle_usb"
+  },
+  {
+    "name": "journalctl",
+    "category": "Administration",
+    "tags": ["logs", "systemd", "dépannage", "services"],
+    "advanced": true,
+    "description": "Interroge le journal de systemd (logs unifiés).",
+    "longDesc": "Sur les distributions modernes, les logs ne sont plus uniquement dans des fichiers texte, mais centralisés par systemd. journalctl permet de les explorer avec des filtres puissants.",
+    "args": [
+      { "flag": "-u", "desc": "Filtre les logs pour une unité/un service spécifique (ex: -u apache2)." },
+      { "flag": "-e", "desc": "Saute directement à la fin du journal (les événements les plus récents)." },
+      { "flag": "-f", "desc": "Suit l'arrivée des nouveaux logs en temps réel." }
+    ],
+    "syntax": "journalctl [options]",
+    "example": "sudo journalctl -eu sshd"
+  },
+  {
+    "name": "sudo",
+    "category": "Administration",
+    "tags": ["root", "admin", "droits", "sécurité"],
+    "description": "Exécute une commande en tant que super-utilisateur (root).",
+    "longDesc": "Permet aux utilisateurs autorisés de lancer des commandes nécessitant des privilèges d'administration sans avoir à se connecter avec le compte root.",
+    "args": [
+      { "flag": "-i", "desc": "Ouvre un shell interactif complet en tant que root." },
+      { "flag": "-u", "desc": "Exécute la commande en tant qu'un autre utilisateur spécifique." }
+    ],
+    "syntax": "sudo [commande]",
+    "example": "sudo apt update"
+  },
+  {
+    "name": "rsync",
+    "category": "Fichiers & Dossiers",
+    "tags": ["sauvegarde", "synchronisation", "copie", "réseau"],
+    "advanced": true,
+    "description": "Synchronise des fichiers et des dossiers localement ou via SSH.",
+    "longDesc": "L'outil ultime pour les sauvegardes incrémentielles. Contrairement à cp, rsync ne transfère que les différences entre la source et la destination, économisant énormément de bande passante.",
+    "args": [
+      { "flag": "-a", "desc": "Mode archive (conserve les permissions, dates, propriétaires)." },
+      { "flag": "-v", "desc": "Mode verbeux." },
+      { "flag": "--delete", "desc": "Supprime dans la destination les fichiers qui n'existent plus dans la source." }
+    ],
+    "syntax": "rsync [options] source destination",
+    "example": "rsync -avz --delete /var/www/ admin@backup:/sauvegardes/www/"
+  },
+  {
+    "name": "wget",
+    "category": "Réseau",
+    "tags": ["web", "télécharger", "http", "fichier"],
+    "description": "Télécharge des fichiers depuis le Web de manière non interactive.",
+    "longDesc": "Idéal pour télécharger des scripts d'installation, des archives ou aspirer des sites web entiers directement depuis le terminal.",
+    "args": [
+      { "flag": "-O", "desc": "Spécifie le nom et le chemin du fichier de sortie." },
+      { "flag": "-c", "desc": "Continue un téléchargement interrompu." }
+    ],
+    "syntax": "wget [options] [URL]",
+    "example": "wget -c https://exemple.com/gros_fichier.iso"
+  },
+  {
+    "name": "tcpdump",
+    "category": "Réseau",
+    "tags": ["réseau", "sniffing", "trames", "analyse"],
+    "advanced": true,
+    "description": "Analyseur de paquets réseau en ligne de commande.",
+    "longDesc": "L'équivalent de Wireshark pour le terminal. Permet de capturer et d'analyser le trafic réseau transitant par vos interfaces pour diagnostiquer des problèmes complexes.",
+    "args": [
+      { "flag": "-i", "desc": "Spécifie l'interface à écouter (ex: -i eth0, ou -i any pour toutes)." },
+      { "flag": "-n", "desc": "Ne résout pas les noms d'hôtes (affiche les IP directement, plus rapide)." },
+      { "flag": "port 80", "desc": "Filtre BPF pour ne capturer que le trafic sur un port spécifique." }
+    ],
+    "syntax": "tcpdump [options] [filtre]",
+    "example": "sudo tcpdump -i any -n port 22"
+  },
+  {
+    "name": "nc",
+    "category": "Réseau",
+    "tags": ["netcat", "réseau", "ports", "scan"],
+    "advanced": true,
+    "description": "Netcat : lit et écrit des données sur des connexions réseau.",
+    "longDesc": "Surnommé le 'couteau suisse du réseau', il permet d'ouvrir des ports, de transférer des fichiers, de scanner des ports ou de tester des connexions TCP/UDP.",
+    "args": [
+      { "flag": "-z", "desc": "Scan port sans envoyer de données (Zero-I/O)." },
+      { "flag": "-v", "desc": "Mode verbeux pour voir le résultat du scan." },
+      { "flag": "-l", "desc": "Mode écoute (Listen), transforme nc en serveur sur un port." }
+    ],
+    "syntax": "nc [options] [hôte] [port]",
+    "example": "nc -zv 192.168.1.10 80"
+  },
+  {
+    "name": "ufw",
+    "category": "Administration",
+    "tags": ["pare-feu", "sécurité", "firewall", "réseau"],
+    "description": "Outil simplifié de configuration de pare-feu (Uncomplicated Firewall).",
+    "longDesc": "Une surcouche beaucoup plus simple qu'iptables pour configurer rapidement des règles de filtrage réseau sous Ubuntu et Debian.",
+    "args": [
+      { "flag": "allow / deny", "desc": "Autorise ou bloque un port/service." },
+      { "flag": "status numbered", "desc": "Affiche le statut et numéro de chaque règle (utile pour les supprimer)." }
+    ],
+    "syntax": "ufw [commande] [règle]",
+    "example": "sudo ufw allow 22/tcp"
+  },
+  {
+    "name": "ln",
+    "category": "Fichiers & Dossiers",
+    "tags": ["liens", "raccourci", "symbolique"],
+    "description": "Crée des liens entre les fichiers (raccourcis).",
+    "longDesc": "Indispensable pour lier un fichier de configuration disponible vers le dossier des fichiers activés (très utilisé avec Apache ou Nginx).",
+    "args": [
+      { "flag": "-s", "desc": "Crée un lien symbolique (soft link) plutôt qu'un lien physique (hard link)." }
+    ],
+    "syntax": "ln [options] cible nom_du_lien",
+    "example": "ln -s /etc/nginx/sites-available/mon_site /etc/nginx/sites-enabled/"
+  },
+  {
+    "name": "history",
+    "category": "Recherche & Texte",
+    "tags": ["historique", "commandes", "recherche"],
+    "description": "Affiche l'historique des commandes saisies par l'utilisateur.",
+    "longDesc": "Très utile combiné avec 'grep' pour retrouver une longue commande tapée la semaine dernière.",
+    "args": [
+      { "flag": "-c", "desc": "Efface l'historique actuel de la session." }
+    ],
+    "syntax": "history",
+    "example": "history | grep iptables"
+  },
+  {
+    "name": "alias",
+    "category": "Administration",
+    "tags": ["raccourci", "personnalisation", "commande"],
+    "description": "Crée des raccourcis pour d'autres commandes longues.",
+    "longDesc": "Permet de gagner du temps en définissant vos propres commandes. À placer dans ~/.bashrc pour qu'ils soient permanents.",
+    "args": [],
+    "syntax": "alias nom='commande'",
+    "example": "alias maj='sudo apt update && sudo apt upgrade -y'"
+  },
+  {
+    "name": "uptime",
+    "category": "Processus & Système",
+    "tags": ["temps", "charge", "load", "système"],
+    "description": "Affiche depuis combien de temps le système fonctionne.",
+    "longDesc": "Donne l'heure actuelle, la durée de fonctionnement (uptime), le nombre d'utilisateurs connectés et, surtout, la charge moyenne (load average) sur 1, 5 et 15 minutes.",
+    "args": [],
+    "syntax": "uptime",
+    "example": "uptime"
+  },
+  {
+    "name": "chown",
+    "category": "Droits & Permissions",
+    "tags": ["propriétaire", "droits", "permissions", "utilisateur"],
+    "description": "Change le propriétaire et/ou le groupe d'un fichier.",
+    "longDesc": "Contrairement à chmod qui gère les permissions, chown (change owner) définit à QUI appartient le fichier.",
+    "args": [
+      { "flag": "-R", "desc": "Applique le changement récursivement aux dossiers et sous-dossiers." }
+    ],
+    "syntax": "chown [options] utilisateur:groupe fichier",
+    "example": "sudo chown -R www-data:www-data /var/www/html"
+  }
+]

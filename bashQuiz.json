@@ -1,0 +1,37 @@
+[
+  {
+    "q": "Quelle commande permet de lister le contenu d'un répertoire avec les fichiers cachés ?",
+    "o": ["ls -l", "ls -a", "dir /h", "show -all"],
+    "a": "ls -a",
+    "h": "Pensez à 'all'.",
+    "e": "L'argument '-a' (all) indique à la commande ls d'afficher tous les fichiers, y compris ceux qui commencent par un point (fichiers cachés sous Linux)."
+  },
+  {
+    "q": "Comment retourner rapidement dans votre répertoire personnel (Home) ?",
+    "o": ["cd ~", "cd ..", "cd /home", "home"],
+    "a": "cd ~",
+    "h": "C'est un caractère spécial appelé le tilde.",
+    "e": "Le tilde (~) est un raccourci universel dans Bash qui pointe vers le répertoire personnel de l'utilisateur courant (ex: /home/etudiant)."
+  },
+  {
+    "q": "Que fait la commande 'chmod 755 script.sh' ?",
+    "o": ["Elle chiffre le fichier script.sh", "Elle donne tous les droits au propriétaire, et lecture/exécution aux autres", "Elle supprime le fichier script.sh", "Elle exécute le fichier avec le niveau de priorité 755"],
+    "a": "Elle donne tous les droits au propriétaire, et lecture/exécution aux autres",
+    "h": "7 = 4+2+1 (Lecture + Écriture + Exécution). 5 = 4+1 (Lecture + Exécution).",
+    "e": "Le premier chiffre (7) s'applique au propriétaire (rwx). Les deux 5 s'appliquent au groupe et aux autres (r-x). Le fichier est donc exécutable par tout le monde, mais modifiable uniquement par son propriétaire."
+  },
+  {
+    "q": "Quelle commande utiliser pour chercher le mot 'Erreur' dans le fichier log.txt ?",
+    "o": ["find 'Erreur' log.txt", "search 'Erreur' > log.txt", "grep 'Erreur' log.txt", "cat log.txt | find"],
+    "a": "grep 'Erreur' log.txt",
+    "h": "C'est l'outil standard d'analyse d'expressions régulières sous Linux.",
+    "e": "La commande 'grep' filtre les lignes d'un fichier qui correspondent à un motif donné. C'est l'outil indispensable pour analyser des logs."
+  },
+  {
+    "q": "À quoi sert la commande 'pwd' ?",
+    "o": ["À changer son mot de passe (password)", "À afficher le chemin du répertoire de travail actuel", "À ouvrir une connexion réseau", "À arrêter un processus"],
+    "a": "À afficher le chemin du répertoire de travail actuel",
+    "h": "Cela signifie Print Working Directory.",
+    "e": "'pwd' (Print Working Directory) affiche le chemin absolu du dossier dans lequel vous vous trouvez actuellement. Ne la confondez pas avec 'passwd' qui sert à changer le mot de passe."
+  }
+]
