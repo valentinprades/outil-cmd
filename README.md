@@ -10,9 +10,9 @@ Cet outil agit comme un pont entre la théorie des systèmes d'exploitation et l
 * **Ancrer les connaissances par le jeu :** Utiliser des modules de quiz basés sur la syntaxe, les arguments et les redirections pour valider ses acquis de manière ludique avant un TP.
 * **Servir de guide de poche :** Un index clair pour retrouver rapidement une commande sans se perdre dans des pages de manuel (`man`) parfois denses pour un débutant.
 
-## 🛠️ Ce que propose l'outil
+## 🛠️ Ce que proposera l'outil
 * **Base de connaissances multi-environnement :** Un répertoire structuré comparant les syntaxes Bash, PowerShell et CMD pour les actions essentielles.
-* **Module d'évaluation (Quiz) :** Des questions ciblées sur la logique des scripts, les options des commandes et la gestion des flux.
+* **Module d'évaluation (Quiz) (En cours) :** Des questions ciblées sur la logique des scripts, les options des commandes et la gestion des flux.
 * **Générateur de snippets (En cours) :** Une aide visuelle pour construire ses premières lignes de commande complexes.
 
 ## ⚙️ Note sur la conception
