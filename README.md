@@ -1,6 +1,6 @@
 # Outil-CMD (~/Outil_Terminal) 💻
 
-> **Un espace d'apprentissage et de révision dédié à la maîtrise de la ligne de commande (Bash, PowerShell, CMD).**
+> **Un espace d'apprentissage et de révision dédié à la maîtrise de la ligne de commande (Bash, PowerShell).**
 
 🔗 **Lien de l'application :** [https://outil-cmd.netlify.app/](https://outil-cmd.netlify.app/)
 
@@ -13,7 +13,7 @@ Cet outil agit comme un pont entre la théorie des systèmes d'exploitation et l
 * **Servir de guide de poche :** Un index clair pour retrouver rapidement une commande sans se perdre dans des pages de manuel (`man`) parfois denses pour un débutant.
 
 ## 🛠️ Ce que propose l'outil
-* **Base de connaissances multi-environnement :** Un répertoire structuré comparant les syntaxes Bash, PowerShell et CMD pour les actions essentielles.
+* **Base de connaissances multi-environnement :** Un répertoire structuré comparant les syntaxes Bash et PowerShell pour les actions essentielles.
 * **Module d'évaluation (Quiz) :** Des questions ciblées sur la logique des scripts, les options des commandes et la gestion des flux.
 * **Générateur de snippets (En cours) :** Une aide visuelle pour construire ses premières lignes de commande complexes.
 
