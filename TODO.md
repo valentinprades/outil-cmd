@@ -1,0 +1,3 @@
+Ajouts : 
+
+Outil d'attribution de droits. Positionner sous la tuile du générateur bash, un outil permettant de calculer les droits linux en lettres et en valeurs 750, etc...

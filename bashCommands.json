@@ -536,5 +536,19 @@
     ],
     "syntax": "chown [options] utilisateur:groupe fichier",
     "example": "sudo chown -R www-data:www-data /var/www/html"
+  },
+  {
+    "name": "scp",
+    "category": "Réseau",
+    "tags": ["copie", "ssh", "transfert", "distant"],
+    "advanced": true,
+    "description": "Copie des fichiers de manière sécurisée entre des hôtes sur un réseau.",
+    "longDesc": "Utilise SSH pour le transfert de données, offrant la même sécurité et la même authentification que SSH. Idéal pour envoyer un fichier d'un client vers un serveur.",
+    "args": [
+      { "flag": "-r", "desc": "Copie récursivement des répertoires entiers." },
+      { "flag": "-P", "desc": "Spécifie un port SSH personnalisé (Attention, c'est un P majuscule)." }
+    ],
+    "syntax": "scp [options] source destination",
+    "example": "scp -P 2222 fichier.zip user@192.168.1.50:/home/user/"
   }
 ]

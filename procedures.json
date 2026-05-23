@@ -1,6 +1,6 @@
 [
   {
-    "id": "tuto-prompt",
+    "id": "proc-prompt",
     "category": "LifeHacks (Pratique & Fun)",
     "title": "Pimper son terminal (Couleurs du Prompt)",
     "difficulty": "Facile",
@@ -413,6 +413,84 @@
         "title": "Étape 3 : Application et Pare-feu",
         "text": "Faites relire le fichier par le système, relancez le service, et autorisez le protocole NFS dans UFW.",
         "command": "sudo exportfs -a\nsudo systemctl restart nfs-kernel-server\nsudo ufw allow from 192.168.1.100 to any port nfs"
+      }
+    ]
+  },
+  {
+    "id": "proc-dns-bind9-complet",
+    "category": "Architecture (Avancé)",
+    "title": "Fonctionnement DNS et Serveur Bind9",
+    "difficulty": "Avancé",
+    "description": "Comprendre la hiérarchie DNS (Résolution, Enregistrements, Zones) et déployer un serveur maître complet avec zone directe et zone inverse sous Linux.",
+    "steps": [
+      {
+        "title": "1. Comprendre la résolution DNS",
+        "text": "Le DNS (Domain Name System) est un annuaire distribué. Quand un client cherche un nom, il interroge son résolveur local. Si l'IP est inconnue, le résolveur remonte la hiérarchie : Serveurs Racines (.), puis TLD (.com, .fr), puis le DNS faisant autorité pour le domaine spécifique.",
+        "command": "# Outil pour tracer la résolution d'un nom de bout en bout :\ndig +trace www.github.com"
+      },
+      {
+        "title": "2. Les Enregistrements (Records) essentiels",
+        "text": "Une zone DNS contient plusieurs types d'enregistrements : A (Nom vers IPv4), AAAA (Nom vers IPv6), CNAME (Alias d'un nom vers un autre), MX (Serveur de messagerie), NS (Serveur DNS du domaine) et PTR (IP vers Nom pour la résolution inverse).",
+        "command": "# Demander spécifiquement le serveur mail (MX) d'un domaine :\ndig -t MX google.com"
+      },
+      {
+        "title": "3. Installation de Bind9",
+        "text": "Bind9 est le serveur DNS standard sous Linux. Le paquet dnsutils contient les outils de test incontournables comme dig et nslookup.",
+        "command": "sudo apt update\nsudo apt install bind9 bind9utils bind9-doc dnsutils -y"
+      },
+      {
+        "title": "4. Configuration Globale & Forwarders",
+        "text": "Pour que votre serveur puisse résoudre les noms d'Internet (et agir comme cache pour votre réseau), il faut relayer les requêtes inconnues vers des DNS publics.",
+        "command": "sudo nano /etc/bind/named.conf.options\n\n# Décommentez et remplissez le bloc forwarders :\n# forwarders {\n#      1.1.1.1;\n#      8.8.8.8;\n# };"
+      },
+      {
+        "title": "5. Déclaration des zones",
+        "text": "Déclarez vos zones (directe pour le nom de domaine, et inverse pour votre sous-réseau IP) dans le fichier de configuration local.",
+        "command": "sudo nano /etc/bind/named.conf.local\n\n# Ajoutez à la fin :\nzone \"entreprise.lan\" {\n    type master;\n    file \"/etc/bind/db.entreprise.lan\";\n};\n\nzone \"1.168.192.in-addr.arpa\" {\n    type master;\n    file \"/etc/bind/db.192.168.1\";\n};"
+      },
+      {
+        "title": "6. Créer la zone directe (db.entreprise.lan)",
+        "text": "Créez le fichier qui associe les noms de vos machines à leurs adresses IP. Le Serial (souvent YYYYMMDD01) DOIT être incrémenté à chaque modification pour que les DNS secondaires se mettent à jour !",
+        "command": "sudo cp /etc/bind/db.local /etc/bind/db.entreprise.lan\nsudo nano /etc/bind/db.entreprise.lan\n\n# Modifiez le SOA, remplacez localhost par entreprise.lan. et ajoutez :\n# @       IN      NS      ns1.entreprise.lan.\n# ns1     IN      A       192.168.1.10\n# routeur IN      A       192.168.1.1\n# web     IN      CNAME   ns1"
+      },
+      {
+        "title": "7. Créer la zone inverse (db.192.168.1)",
+        "text": "Créez le fichier qui associe les IP aux noms (très utile pour l'anti-spam ou Active Directory). L'enregistrement utilisé est 'PTR'.",
+        "command": "sudo cp /etc/bind/db.127 /etc/bind/db.192.168.1\nsudo nano /etc/bind/db.192.168.1\n\n# Modifiez le SOA et ajoutez les pointeurs (PTR) :\n# @       IN      NS      ns1.entreprise.lan.\n# 10      IN      PTR     ns1.entreprise.lan.\n# 1       IN      PTR     routeur.entreprise.lan."
+      },
+      {
+        "title": "8. Vérification de la syntaxe",
+        "text": "Bind9 est extrêmement sensible aux erreurs de syntaxe (un point-virgule ou un point final oublié fait crasher la zone). Validez toujours vos fichiers avant de relancer le service.",
+        "command": "sudo named-checkconf\nsudo named-checkzone entreprise.lan /etc/bind/db.entreprise.lan\nsudo named-checkzone 1.168.192.in-addr.arpa /etc/bind/db.192.168.1"
+      },
+      {
+        "title": "9. Relance et Tests",
+        "text": "Redémarrez Bind9, puis utilisez dig en forçant l'interrogation sur votre serveur local (127.0.0.1) pour valider la résolution.",
+        "command": "sudo systemctl restart bind9\n\n# Test de la zone directe :\ndig @127.0.0.1 web.entreprise.lan\n\n# Test de la zone inverse :\ndig @127.0.0.1 -x 192.168.1.10"
+      }
+    ]
+  },
+  {
+    "id": "proc-nginx-revproxy",
+    "category": "Services (Web)",
+    "title": "Déployer un Reverse Proxy (Nginx)",
+    "difficulty": "Intermédiaire",
+    "description": "Utiliser Nginx comme proxy inverse pour intercepter le trafic Web entrant (port 80/443) et le rediriger vers une application interne tournant sur un port spécifique (ex: Node.js sur le port 3000).",
+    "steps": [
+      {
+        "title": "Étape 1 : Installation",
+        "text": "Mettez à jour les dépôts et installez le serveur Web Nginx.",
+        "command": "sudo apt update && sudo apt install nginx -y"
+      },
+      {
+        "title": "Étape 2 : Configuration du bloc Server",
+        "text": "Créez un nouveau fichier de configuration pour votre domaine. Utilisez 'proxy_pass' pour indiquer à Nginx où rediriger le trafic en interne.",
+        "command": "sudo nano /etc/nginx/sites-available/app.conf\n\n# server {\n#     listen 80;\n#     server_name app.domaine.lan;\n#     location / {\n#         proxy_pass http://localhost:3000;\n#     }\n# }"
+      },
+      {
+        "title": "Étape 3 : Activation et Test",
+        "text": "Créez le lien symbolique pour activer le site, testez la syntaxe pour éviter les crashs, puis relancez Nginx.",
+        "command": "sudo ln -s /etc/nginx/sites-available/app.conf /etc/nginx/sites-enabled/\nsudo nginx -t\nsudo systemctl reload nginx"
       }
     ]
   }

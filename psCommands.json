@@ -1,0 +1,363 @@
+[
+  {
+    "name": "Get-ChildItem",
+    "category": "Fichiers & Dossiers",
+    "tags": ["liste", "contenu", "répertoire", "explorer", "ls", "dir"],
+    "description": "Obtient les éléments et les éléments enfants dans un ou plusieurs emplacements spécifiés.",
+    "longDesc": "L'équivalent PowerShell de la commande 'ls' sous Linux. Très puissant, il retourne des objets complets (.NET) plutôt que du simple texte, ce qui permet des tris et filtres avancés.",
+    "args": [
+      { "flag": "-Recurse", "desc": "Recherche dans tous les sous-dossiers." },
+      { "flag": "-Force", "desc": "Inclut les fichiers cachés et systèmes." },
+      { "flag": "-Filter", "desc": "Spécifie un filtre de recherche (ex: *.txt)." }
+    ],
+    "syntax": "Get-ChildItem [Chemin] [Options]",
+    "example": "Get-ChildItem -Path C:\\Logs -Recurse -Filter *.log"
+  },
+  {
+    "name": "New-ADUser",
+    "category": "Administration",
+    "tags": ["utilisateur", "active directory", "ad", "compte"],
+    "description": "Crée un nouvel utilisateur dans l'Active Directory.",
+    "longDesc": "La commande centrale pour le provisionnement d'utilisateurs Windows. Elle fait partie du module ActiveDirectory et requiert les droits d'administration de domaine.",
+    "args": [
+      { "flag": "-Name", "desc": "Le nom complet de l'utilisateur." },
+      { "flag": "-GivenName", "desc": "Le prénom." },
+      { "flag": "-Surname", "desc": "Le nom de famille." },
+      { "flag": "-Path", "desc": "Le chemin LDAP (Distinguished Name) de l'Unité d'Organisation (OU)." }
+    ],
+    "syntax": "New-ADUser -Name \"Nom Complet\" -SamAccountName \"login\" [Options]",
+    "example": "New-ADUser -Name \"Jean Dupont\" -SamAccountName \"jdupont\" -Path \"OU=RH,DC=entreprise,DC=lan\""
+  },
+  {
+    "name": "Test-NetConnection",
+    "category": "Réseau",
+    "tags": ["ping", "port", "réseau", "test", "telnet"],
+    "description": "Affiche les informations de diagnostic pour une connexion réseau (Ping + Scan de port).",
+    "longDesc": "Le couteau suisse réseau de PowerShell. Il remplace avantageusement 'ping' et 'telnet' en combinant les deux fonctionnalités.",
+    "args": [
+      { "flag": "-Port", "desc": "Le numéro du port TCP à tester." },
+      { "flag": "-InformationLevel", "desc": "Niveau de détail (Quiet = True/False uniquement)." }
+    ],
+    "syntax": "Test-NetConnection -ComputerName [IP_ou_Nom] [Options]",
+    "example": "Test-NetConnection -ComputerName 192.168.1.10 -Port 3389"
+  },
+  {
+    "name": "Get-Help",
+    "category": "Découverte & Aide",
+    "tags": ["aide", "documentation", "man", "syntaxe"],
+    "description": "Affiche des informations d'aide sur les commandes et concepts PowerShell.",
+    "longDesc": "L'équivalent de la commande 'man' sous Linux. Il est indispensable d'utiliser 'Update-Help' lors de la première utilisation pour télécharger les fichiers d'aide locaux.",
+    "args": [
+      { "flag": "-Detailed", "desc": "Affiche des informations détaillées, y compris les descriptions de paramètres." },
+      { "flag": "-Examples", "desc": "N'affiche que les exemples d'utilisation de la commande." },
+      { "flag": "-Online", "desc": "Ouvre la documentation officielle Microsoft dans votre navigateur web." }
+    ],
+    "syntax": "Get-Help [Nom-Commande] [Options]",
+    "example": "Get-Help Get-Process -Examples"
+  },
+  {
+    "name": "Get-Command",
+    "category": "Découverte & Aide",
+    "tags": ["recherche", "cmdlet", "module", "liste"],
+    "description": "Récupère toutes les commandes disponibles sur le système.",
+    "longDesc": "Extrêmement utile quand on ne se souvient plus du verbe exact d'une commande. Accepte les wildcards (*) pour trouver toutes les commandes liées à un module (ex: *ADUser*).",
+    "args": [
+      { "flag": "-Module", "desc": "Filtre les commandes appartenant à un module spécifique (ex: ActiveDirectory)." },
+      { "flag": "-CommandType", "desc": "Filtre par type (Alias, Cmdlet, Function)." }
+    ],
+    "syntax": "Get-Command [Nom_ou_Filtre]",
+    "example": "Get-Command *NetIP*"
+  },
+  {
+    "name": "Get-Service",
+    "category": "Processus & Système",
+    "tags": ["service", "systemctl", "daemon", "état"],
+    "description": "Obtient l'état des services sur l'ordinateur local ou distant.",
+    "longDesc": "L'équivalent de 'systemctl status'. Permet de lister les services en cours d'exécution ou arrêtés, et de vérifier leur mode de démarrage.",
+    "args": [
+      { "flag": "-Name", "desc": "Le nom du service (accepte les wildcards)." },
+      { "flag": "-DisplayName", "desc": "Le nom d'affichage convivial du service." }
+    ],
+    "syntax": "Get-Service [Nom]",
+    "example": "Get-Service wuauserv"
+  },
+  {
+    "name": "Restart-Service",
+    "category": "Processus & Système",
+    "tags": ["service", "redémarrer", "systemctl"],
+    "description": "Arrête puis démarre un ou plusieurs services.",
+    "longDesc": "Commande nécessitant des droits d'élévation (Administrateur). Utile après la modification d'un fichier de configuration (ex: DNS, IIS).",
+    "args": [
+      { "flag": "-Force", "desc": "Force le redémarrage même si d'autres services en dépendent." },
+      { "flag": "-PassThru", "desc": "Retourne l'objet représentant le service redémarré (par défaut la commande ne retourne rien)." }
+    ],
+    "syntax": "Restart-Service -Name [Nom] [Options]",
+    "example": "Restart-Service -Name spooler -Force"
+  },
+  {
+    "name": "Get-Process",
+    "category": "Processus & Système",
+    "tags": ["processus", "ps", "top", "tâche", "ram"],
+    "description": "Obtient les processus en cours d'exécution sur l'ordinateur local.",
+    "longDesc": "Remplace avantageusement le Gestionnaire des tâches ou les commandes 'ps'/'top' de Linux. Les propriétés renvoyées permettent de trier facilement par consommation CPU ou RAM.",
+    "args": [
+      { "flag": "-Name", "desc": "Filtre par nom d'exécutable (sans le .exe)." }
+    ],
+    "syntax": "Get-Process [Nom]",
+    "example": "Get-Process chrome | Sort-Object CPU -Descending"
+  },
+  {
+    "name": "Stop-Process",
+    "category": "Processus & Système",
+    "tags": ["kill", "tuer", "processus", "forcer"],
+    "description": "Arrête un ou plusieurs processus en cours d'exécution.",
+    "longDesc": "L'équivalent de la commande 'kill' sous Linux. Très pratique lorsqu'il est pipé depuis un Get-Process.",
+    "args": [
+      { "flag": "-Id", "desc": "Spécifie l'ID du processus (PID) à tuer." },
+      { "flag": "-Name", "desc": "Le nom du processus à arrêter." },
+      { "flag": "-Force", "desc": "Force l'arrêt sans confirmation." }
+    ],
+    "syntax": "Stop-Process -Name [Nom] [Options]",
+    "example": "Stop-Process -Name notepad -Force"
+  },
+  {
+    "name": "Invoke-Command",
+    "category": "Administration",
+    "tags": ["ssh", "distant", "winrm", "remote", "exécution"],
+    "advanced": true,
+    "description": "Exécute des commandes sur des ordinateurs locaux et distants.",
+    "longDesc": "Le pilier de l'administration centralisée Windows. Repose sur le protocole WinRM. Permet d'exécuter un script bloc (ScriptBlock) sur des dizaines de serveurs en parallèle.",
+    "args": [
+      { "flag": "-ComputerName", "desc": "Liste des serveurs cibles (IPs ou noms d'hôtes)." },
+      { "flag": "-ScriptBlock", "desc": "Le code PowerShell à exécuter à distance, entouré d'accolades {}." }
+    ],
+    "syntax": "Invoke-Command -ComputerName [Serveur] -ScriptBlock { [Commandes] }",
+    "example": "Invoke-Command -ComputerName SRV-01, SRV-02 -ScriptBlock { Restart-Service spooler }"
+  },
+  {
+    "name": "Import-Csv",
+    "category": "Données & Fichiers",
+    "tags": ["csv", "import", "boucle", "données", "excel"],
+    "advanced": true,
+    "description": "Crée des objets personnalisés à partir des éléments d'un fichier CSV.",
+    "longDesc": "Extrêmement puissant : cette cmdlet lit un CSV textuel et transforme chaque ligne en un véritable objet PowerShell (où chaque colonne devient une propriété accessible). C'est la base de l'automatisation de masse.",
+    "args": [
+      { "flag": "-Path", "desc": "Le chemin absolu ou relatif vers le fichier CSV." },
+      { "flag": "-Delimiter", "desc": "Précise le séparateur utilisé (souvent ';' en France au lieu de la virgule ',')." }
+    ],
+    "syntax": "Import-Csv -Path [Chemin] [Options]",
+    "example": "Import-Csv -Path C:\\users.csv -Delimiter ';' | ForEach-Object { New-ADUser -Name $_.Nom }"
+  },
+  {
+    "name": "Where-Object",
+    "category": "Recherche & Texte",
+    "tags": ["filtre", "recherche", "condition", "grep", "?"],
+    "description": "Sélectionne les objets qui satisfont à une condition spécifique.",
+    "longDesc": "L'équivalent conceptuel de 'grep' (bien que basé sur des objets). Il filtre les éléments passant dans le pipeline. On utilise souvent son alias '?' ou 'where'. La variable automatique '$_' représente l'objet en cours d'analyse.",
+    "args": [
+      { "flag": "-eq, -ne", "desc": "Opérateurs : Égal à (Equal), Différent de (Not Equal)." },
+      { "flag": "-gt, -lt", "desc": "Opérateurs : Plus grand que (Greater Than), Plus petit que (Less Than)." },
+      { "flag": "-match, -like", "desc": "Opérateurs : Correspondance Regex (-match) ou Wildcard (-like avec *)." }
+    ],
+    "syntax": "Where-Object { $_.Propriété -opérateur Valeur }",
+    "example": "Get-Service | Where-Object { $_.Status -eq 'Running' }"
+  },
+  {
+    "name": "Select-Object",
+    "category": "Recherche & Texte",
+    "tags": ["colonnes", "formatage", "propriétés", "awk"],
+    "description": "Sélectionne les propriétés (colonnes) spécifiées d'un objet ou d'un ensemble d'objets.",
+    "longDesc": "L'équivalent conceptuel de 'awk' ou 'cut'. Très utile pour ne garder que les informations pertinentes d'une commande bavarde avant un export CSV ou un affichage console.",
+    "args": [
+      { "flag": "-Property", "desc": "Spécifie les noms des propriétés à conserver (séparés par des virgules)." },
+      { "flag": "-First / -Last", "desc": "Ne sélectionne que les X premiers ou derniers objets du tableau (comme 'head' ou 'tail')." },
+      { "flag": "-ExpandProperty", "desc": "Extrait la valeur brute de la propriété (transforme l'objet en texte simple ou tableau simple)." }
+    ],
+    "syntax": "Select-Object -Property [Prop1], [Prop2]",
+    "example": "Get-Process | Select-Object -Property Name, CPU -First 5"
+  },
+  {
+    "name": "Get-WinEvent",
+    "category": "Processus & Système",
+    "tags": ["logs", "événements", "eventvwr", "journalctl"],
+    "description": "Obtient les événements des journaux d'événements (Event Viewer) locaux ou distants.",
+    "longDesc": "Remplace l'ancienne commande Get-EventLog. C'est l'équivalent de 'journalctl'. Indispensable pour diagnostiquer des erreurs systèmes, des crashs applicatifs ou des audits de sécurité (logons).",
+    "args": [
+      { "flag": "-LogName", "desc": "Le nom du journal à interroger (ex: System, Application, Security)." },
+      { "flag": "-MaxEvents", "desc": "Limite le nombre d'événements retournés (très important pour les performances)." },
+      { "flag": "-FilterHashtable", "desc": "Filtre extrêmement rapide au niveau du journal (ex: @{LogName='System'; Level=2})." }
+    ],
+    "syntax": "Get-WinEvent -LogName [Nom] [Options]",
+    "example": "Get-WinEvent -LogName System -MaxEvents 20 | Where-Object LevelDisplayName -eq 'Error'"
+  },
+  {
+    "name": "Get-CimInstance",
+    "category": "Administration",
+    "tags": ["wmi", "matériel", "bios", "système", "cim"],
+    "advanced": true,
+    "description": "Obtient les instances CIM/WMI d'une classe (Informations matérielles et OS).",
+    "longDesc": "Remplace l'ancienne commande Get-WmiObject. C'est la clé pour interroger le matériel du PC (Numéro de série, Modèle de RAM, Espace disque brut, BIOS).",
+    "args": [
+      { "flag": "-ClassName", "desc": "La classe WMI à interroger (ex: Win32_OperatingSystem, Win32_LogicalDisk)." },
+      { "flag": "-ComputerName", "desc": "Permet d'interroger la classe sur un ordinateur distant." }
+    ],
+    "syntax": "Get-CimInstance -ClassName [Win32_Class]",
+    "example": "Get-CimInstance -ClassName Win32_LogicalDisk -Filter \"DriveType=3\""
+  },
+  {
+    "name": "Export-Csv",
+    "category": "Données & Fichiers",
+    "tags": ["export", "csv", "rapport", "sauvegarder"],
+    "description": "Convertit des objets en une série de chaînes de valeurs séparées par des virgules (CSV).",
+    "longDesc": "L'outil parfait pour générer des rapports d'administration. N'importe quel retour de commande PowerShell peut être envoyé (via le pipeline) vers un fichier CSV.",
+    "args": [
+      { "flag": "-Path", "desc": "Le chemin de destination du fichier à créer." },
+      { "flag": "-Delimiter", "desc": "Le caractère de séparation (utiliser ';' en environnement francophone pour Excel)." },
+      { "flag": "-NoTypeInformation", "desc": "Supprime la première ligne (technique) générée par défaut dans le CSV." }
+    ],
+    "syntax": "[Commande] | Export-Csv -Path [Fichier.csv] [Options]",
+    "example": "Get-Service | Select-Object Name, Status | Export-Csv -Path C:\\services.csv -Delimiter ';' -NoTypeInformation"
+  },
+  {
+    "name": "Invoke-WebRequest",
+    "category": "Réseau",
+    "tags": ["web", "curl", "télécharger", "api", "http"],
+    "description": "Envoie des requêtes HTTP/HTTPS à une page web ou un service web.",
+    "longDesc": "L'équivalent de 'curl' ou 'wget' sous Linux. Permet de télécharger des fichiers, de tester si un site répond (StatusCode) ou d'interagir avec des API simples.",
+    "args": [
+      { "flag": "-Uri", "desc": "L'URL cible." },
+      { "flag": "-OutFile", "desc": "Spécifie le chemin local pour enregistrer le contenu (téléchargement)." },
+      { "flag": "-UseBasicParsing", "desc": "Option de performance (ignore le parsing HTML complexe d'Internet Explorer)." }
+    ],
+    "syntax": "Invoke-WebRequest -Uri [URL] [Options]",
+    "example": "Invoke-WebRequest -Uri 'https://site.com/fichier.zip' -OutFile 'C:\\temp\\fichier.zip'"
+  },
+  {
+    "name": "Get-Content",
+    "category": "Fichiers & Dossiers",
+    "tags": ["lire", "texte", "cat", "fichier", "tail"],
+    "description": "Lit le contenu d'un fichier texte.",
+    "longDesc": "L'équivalent de la commande 'cat' sous Linux. Il lit le contenu d'un fichier et renvoie un tableau de chaînes de caractères (une chaîne par ligne). Il peut aussi simuler un 'tail -f'.",
+    "args": [
+      { "flag": "-Path", "desc": "Le chemin du fichier à lire." },
+      { "flag": "-Tail", "desc": "Ne lit que les X dernières lignes du fichier." },
+      { "flag": "-Wait", "desc": "Garde le fichier ouvert et lit les nouvelles lignes en temps réel (équivalent de tail -f)." }
+    ],
+    "syntax": "Get-Content [Options]",
+    "example": "Get-Content -Path C:\\Logs\\app.log -Tail 10 -Wait"
+  },
+  {
+    "name": "Copy-Item",
+    "category": "Fichiers & Dossiers",
+    "tags": ["copier", "fichiers", "cp", "dossiers"],
+    "description": "Copie un élément d'un emplacement à un autre.",
+    "longDesc": "L'équivalent de la commande 'cp' sous Linux. Permet de copier des fichiers, des dossiers, ou même des clés de registre (grâce aux PSDrives).",
+    "args": [
+      { "flag": "-Path", "desc": "Le chemin de l'élément source." },
+      { "flag": "-Destination", "desc": "Le chemin de destination." },
+      { "flag": "-Recurse", "desc": "Copie de manière récursive (indispensable pour les dossiers)." }
+    ],
+    "syntax": "Copy-Item -Path [Source] -Destination [Dest] [Options]",
+    "example": "Copy-Item -Path C:\\Source\\* -Destination C:\\Backup\\ -Recurse"
+  },
+  {
+    "name": "Remove-Item",
+    "category": "Fichiers & Dossiers",
+    "tags": ["supprimer", "effacer", "rm", "fichiers"],
+    "description": "Supprime un ou plusieurs éléments.",
+    "longDesc": "L'équivalent de la commande 'rm' sous Linux. Permet de supprimer des fichiers, dossiers, certificats ou variables d'environnement.",
+    "args": [
+      { "flag": "-Path", "desc": "Le chemin de l'élément à supprimer." },
+      { "flag": "-Recurse", "desc": "Supprime le dossier et tout son contenu (rm -r)." },
+      { "flag": "-Force", "desc": "Force la suppression (utile pour les fichiers en lecture seule ou cachés)." }
+    ],
+    "syntax": "Remove-Item -Path [Cible] [Options]",
+    "example": "Remove-Item -Path C:\\Temp\\* -Recurse -Force"
+  },
+  {
+    "name": "New-Item",
+    "category": "Fichiers & Dossiers",
+    "tags": ["créer", "nouveau", "fichier", "dossier", "touch", "mkdir"],
+    "description": "Crée un nouvel élément (fichier ou dossier).",
+    "longDesc": "Remplace à la fois 'touch' et 'mkdir' sous Linux, le comportement dépendant du paramètre -ItemType spécifié.",
+    "args": [
+      { "flag": "-Path", "desc": "L'emplacement où créer l'élément." },
+      { "flag": "-ItemType", "desc": "Le type d'élément (File, Directory, SymbolicLink)." },
+      { "flag": "-Value", "desc": "Le contenu initial à insérer dans le fichier lors de la création." }
+    ],
+    "syntax": "New-Item -Path [Chemin] -ItemType [Type]",
+    "example": "New-Item -Path C:\\Dossier -ItemType Directory"
+  },
+  {
+    "name": "Resolve-DnsName",
+    "category": "Réseau",
+    "tags": ["dns", "résolution", "nslookup", "dig"],
+    "description": "Effectue une requête DNS pour résoudre un nom de domaine.",
+    "longDesc": "L'équivalent moderne de 'nslookup' ou 'dig'. Contrairement à ping, il retourne des objets PowerShell détaillant spécifiquement les enregistrements DNS d'une zone.",
+    "args": [
+      { "flag": "-Name", "desc": "Le nom de domaine à résoudre." },
+      { "flag": "-Type", "desc": "Le type d'enregistrement demandé (A, AAAA, MX, TXT, etc.)." },
+      { "flag": "-Server", "desc": "Le serveur DNS spécifique à interroger (pour bypasser celui de la carte réseau)." }
+    ],
+    "syntax": "Resolve-DnsName -Name [Domaine] [Options]",
+    "example": "Resolve-DnsName -Name google.com -Type MX -Server 8.8.8.8"
+  },
+  {
+    "name": "Start-Process",
+    "category": "Processus & Système",
+    "tags": ["processus", "lancer", "exécuter", "application"],
+    "description": "Démarre un ou plusieurs processus sur l'ordinateur local.",
+    "longDesc": "Permet de lancer des exécutables (avec des arguments spécifiques), des scripts ou même d'ouvrir des documents (comme un PDF) avec leur application par défaut.",
+    "args": [
+      { "flag": "-FilePath", "desc": "Le chemin du fichier exécutable ou du document." },
+      { "flag": "-ArgumentList", "desc": "Les arguments à passer à l'exécutable." },
+      { "flag": "-Wait", "desc": "Met le script en pause jusqu'à ce que le processus lancé soit fermé." }
+    ],
+    "syntax": "Start-Process -FilePath [Chemin] [Options]",
+    "example": "Start-Process -FilePath \"notepad.exe\" -ArgumentList \"C:\\fichier.txt\""
+  },
+  {
+    "name": "Write-Host",
+    "category": "Recherche & Texte",
+    "tags": ["afficher", "texte", "echo", "console"],
+    "description": "Affiche des objets ou du texte directement dans la console.",
+    "longDesc": "L'équivalent de 'echo' sous Linux. Attention : Write-Host ne retourne rien dans le pipeline, il sert uniquement à l'affichage visuel (pour passer des données dans un pipeline, utilisez Write-Output).",
+    "args": [
+      { "flag": "-ForegroundColor", "desc": "Change la couleur du texte." },
+      { "flag": "-BackgroundColor", "desc": "Change la couleur de fond." },
+      { "flag": "-NoNewline", "desc": "Empêche le retour à la ligne automatique à la fin de l'affichage." }
+    ],
+    "syntax": "Write-Host [Texte] [Options]",
+    "example": "Write-Host \"Script terminé avec succès !\" -ForegroundColor Green"
+  },
+  {
+    "name": "Set-ItemProperty",
+    "category": "Administration",
+    "tags": ["registre", "regedit", "propriété", "valeur"],
+    "advanced": true,
+    "description": "Modifie la valeur d'une propriété d'un élément (souvent utilisé pour le Registre Windows).",
+    "longDesc": "La cmdlet incontournable pour scripter des modifications de base de registre (regedit) au travers du lecteur virtuel (PSDrive) 'HKLM:' ou 'HKCU:'.",
+    "args": [
+      { "flag": "-Path", "desc": "Le chemin de la clé de registre." },
+      { "flag": "-Name", "desc": "Le nom de la valeur à modifier." },
+      { "flag": "-Value", "desc": "La nouvelle donnée à appliquer." }
+    ],
+    "syntax": "Set-ItemProperty -Path [Clé] -Name [Valeur] -Value [Donnée]",
+    "example": "Set-ItemProperty -Path \"HKLM:\\Software\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU\" -Name \"NoAutoRebootWithLoggedOnUsers\" -Value 1"
+  },
+  {
+    "name": "Invoke-RestMethod",
+    "category": "Réseau",
+    "tags": ["api", "rest", "json", "web", "http"],
+    "advanced": true,
+    "description": "Envoie des requêtes HTTP/HTTPS à des services web RESTful et analyse automatiquement le JSON retourné.",
+    "longDesc": "Contrairement à Invoke-WebRequest qui retourne la page web brute, Invoke-RestMethod convertit intelligemment le payload JSON ou XML directement en objets PowerShell exploitables dans vos scripts.",
+    "args": [
+      { "flag": "-Uri", "desc": "L'URL de l'API à interroger." },
+      { "flag": "-Method", "desc": "La méthode HTTP (GET, POST, PUT, DELETE)." },
+      { "flag": "-Headers", "desc": "Un dictionnaire (@{}) contenant les en-têtes (ex: autorisation/Token)." }
+    ],
+    "syntax": "Invoke-RestMethod -Uri [URL] -Method [Methode] [Options]",
+    "example": "$data = Invoke-RestMethod -Uri 'https://api.github.com/users/valentinprades' -Method Get"
+  }
+]

@@ -1,0 +1,315 @@
+[
+  {
+    "id": "proc-ad-bulk",
+    "category": "Active Directory",
+    "title": "Création d'utilisateurs en masse (via CSV)",
+    "difficulty": "Intermédiaire",
+    "description": "Automatisez le provisionnement de dizaines ou centaines d'utilisateurs dans l'Active Directory à partir d'un simple fichier Excel/CSV fourni par les RH.",
+    "steps": [
+      {
+        "title": "1. Préparer le fichier source",
+        "text": "Créez un fichier CSV (séparé par des points-virgules) nommé 'nouveaux.csv'. La première ligne doit contenir les en-têtes exacts qui seront utilisés dans la boucle.\n\nExemple de contenu :\nNom;Prenom;Service;Login\nDupont;Jean;Comptabilite;jdupont\nMartin;Sophie;Direction;smartin",
+        "command": "Get-Content C:\\temp\\nouveaux.csv"
+      },
+      {
+        "title": "2. Vérifier l'importation",
+        "text": "Avant de lancer la création, vérifiez toujours que PowerShell lit correctement le fichier et sépare bien les colonnes grâce au bon délimiteur.",
+        "command": "Import-Csv -Path C:\\temp\\nouveaux.csv -Delimiter \";\" | Format-Table"
+      },
+      {
+        "title": "3. Sécuriser le mot de passe par défaut",
+        "text": "New-ADUser exige que le mot de passe soit fourni sous forme de chaîne sécurisée (SecureString), et non en texte brut.",
+        "command": "$mdp = ConvertTo-SecureString \"Bienvenue2026!\" -AsPlainText -Force"
+      },
+      {
+        "title": "4. La boucle de création",
+        "text": "Combinez l'importation CSV avec une boucle ForEach. La variable magique '$_' représentera chaque ligne du fichier, et vous pourrez appeler ses colonnes (ex: $_.Nom).\nLe paramètre '-ChangePasswordAtLogon $true' forcera l'utilisateur à changer 'Bienvenue2026!' dès sa première connexion.",
+        "command": "Import-Csv C:\\temp\\nouveaux.csv -Delimiter \";\" | ForEach-Object {\n    New-ADUser -Name \"$($_.Prenom) $($_.Nom)\" -GivenName $_.Prenom -Surname $_.Nom -SamAccountName $_.Login -Department $_.Service -AccountPassword $mdp -Enabled $true -ChangePasswordAtLogon $true -Path \"OU=Utilisateurs,DC=entreprise,DC=lan\"\n}"
+      }
+    ]
+  },
+  {
+    "id": "proc-ntfs-acl",
+    "category": "Fichiers & Sécurité",
+    "title": "Gérer les droits NTFS en PowerShell",
+    "difficulty": "Avancé",
+    "description": "La gestion des droits NTFS (Set-Acl) est complexe en PowerShell car elle nécessite de manipuler les objets de sécurité .NET. Voici la méthode standard pour attribuer des droits sur un dossier.",
+    "steps": [
+      {
+        "title": "1. Récupérer la liste d'accès actuelle (ACL)",
+        "text": "Ne créez jamais une ACL de zéro, vous risqueriez d'écraser les droits du système (SYSTEM) et des administrateurs. Récupérez d'abord l'ACL existante du dossier.",
+        "command": "$acl = Get-Acl -Path \"C:\\Partages\\Direction\""
+      },
+      {
+        "title": "2. Définir la nouvelle règle",
+        "text": "Il faut instancier un objet 'FileSystemAccessRule' qui contient 5 paramètres : Utilisateur/Groupe, Droits (ReadAndExecute, Modify, FullControl), Héritage, Propagation, et Autorisation (Allow/Deny).",
+        "command": "$rule = New-Object System.Security.AccessControl.FileSystemAccessRule(\"DOMAINE\\Grp_Direction\", \"Modify\", \"ContainerInherit, ObjectInherit\", \"None\", \"Allow\")"
+      },
+      {
+        "title": "3. Injecter la règle dans l'ACL",
+        "text": "Ajoutez la nouvelle règle à l'objet ACL que vous avez copié à l'étape 1. Notez que cette modification se fait en RAM, le dossier n'est pas encore modifié.",
+        "command": "$acl.SetAccessRule($rule)"
+      },
+      {
+        "title": "4. Appliquer la nouvelle ACL au dossier",
+        "text": "Enfin, utilisez Set-Acl pour écraser les droits du dossier avec votre objet ACL mis à jour.",
+        "command": "Set-Acl -Path \"C:\\Partages\\Direction\" -AclObject $acl"
+      }
+    ]
+  },
+  {
+    "id": "proc-wsus-ps",
+    "category": "Administration (Avancé)",
+    "title": "Gérer les Mises à jour (PSWindowsUpdate)",
+    "difficulty": "Facile",
+    "description": "Plutôt que d'utiliser l'interface graphique lourde (surtout sur Windows Server Core), gérez vos mises à jour (Windows Update) directement depuis la console grâce à un module très populaire.",
+    "steps": [
+      {
+        "title": "1. Installer le module communautaire",
+        "text": "Le module PSWindowsUpdate n'est pas inclus par défaut. Installez-le depuis la galerie officielle Microsoft (nécessite un accès Internet).",
+        "command": "Install-Module -Name PSWindowsUpdate -Force"
+      },
+      {
+        "title": "2. Vérifier les mises à jour disponibles",
+        "text": "Demandez au serveur d'interroger Windows Update (ou votre serveur WSUS local) pour lister ce qui doit être installé.",
+        "command": "Get-WindowsUpdate"
+      },
+      {
+        "title": "3. Installer et Redémarrer automatiquement",
+        "text": "Lancez l'installation. L'argument '-AcceptAll' valide automatiquement les licences, et '-AutoReboot' permet au serveur de redémarrer tout seul s'il en a besoin à la fin du processus.",
+        "command": "Install-WindowsUpdate -AcceptAll -AutoReboot"
+      },
+      {
+        "title": "4. Cacher une mise à jour (Optionnel)",
+        "text": "Si une mise à jour spécifique fait crasher vos applications, vous pouvez la masquer (l'ignorer) via son numéro KB.",
+        "command": "Hide-WindowsUpdate -KBArticleID \"KB5031234\""
+      }
+    ]
+  },
+  {
+    "id": "proc-winrm-setup",
+    "category": "Réseau & Distant",
+    "title": "Activer et utiliser WinRM (PSRemoting)",
+    "difficulty": "Intermédiaire",
+    "description": "L'administration moderne de Windows se fait à distance. PSRemoting (basé sur le protocole WinRM) vous permet d'envoyer des commandes sur un ou plusieurs serveurs à la fois.",
+    "steps": [
+      {
+        "title": "1. Activer WinRM sur le serveur cible",
+        "text": "Sur la machine que vous souhaitez administrer à distance (si ce n'est pas un Windows Server où c'est natif), lancez cette commande dans une console Administrateur.",
+        "command": "Enable-PSRemoting -Force"
+      },
+      {
+        "title": "2. Gérer les réseaux hors-domaine (Optionnel)",
+        "text": "Si vos deux machines ne sont pas dans le même domaine Active Directory (ex: groupe de travail), la sécurité WinRM bloquera la connexion. Il faut ajouter l'IP cible dans les 'TrustedHosts' du PC client.",
+        "command": "Set-Item WSMan:\\localhost\\Client\\TrustedHosts -Value \"192.168.1.50\" -Force"
+      },
+      {
+        "title": "3. Ouvrir une session interactive (1-to-1)",
+        "text": "Pour administrer le serveur exactement comme si vous étiez devant (l'équivalent de SSH), utilisez Enter-PSSession.",
+        "command": "Enter-PSSession -ComputerName 192.168.1.50 -Credential Administrateur\n# Pour quitter tapez : Exit-PSSession"
+      },
+      {
+        "title": "4. Exécuter une commande en masse (1-to-Many)",
+        "text": "Pour exécuter un script sur plusieurs serveurs en parallèle sans ouvrir de session interactive, utilisez Invoke-Command.",
+        "command": "Invoke-Command -ComputerName SRV-01, SRV-02 -ScriptBlock { Get-Service spooler | Restart-Service }"
+      }
+    ]
+  },
+  {
+    "id": "proc-iis",
+    "category": "Services (Web)",
+    "title": "Déployer un serveur Web IIS",
+    "difficulty": "Facile",
+    "description": "Installation et configuration rapide du rôle serveur Web IIS (Internet Information Services) sous Windows Server via PowerShell.",
+    "steps": [
+      {
+        "title": "1. Installer le rôle IIS",
+        "text": "Utilisez Install-WindowsFeature pour installer le rôle Web-Server ainsi que la console de management (IncludeManagementTools).",
+        "command": "Install-WindowsFeature -Name Web-Server -IncludeManagementTools"
+      },
+      {
+        "title": "2. Vérifier le service",
+        "text": "Assurez-vous que le service W3SVC (Service de publication World Wide Web) est bien démarré.",
+        "command": "Get-Service -Name W3SVC"
+      },
+      {
+        "title": "3. Créer un nouveau site Web",
+        "text": "Créez le dossier racine et configurez un nouveau site pointant vers ce dossier, avec une liaison sur le port 80.",
+        "command": "New-Item -Path \"C:\\inetpub\\MonSite\" -ItemType Directory\nNew-Website -Name \"MonSite\" -PhysicalPath \"C:\\inetpub\\MonSite\" -Port 80 -Force"
+      }
+    ]
+  },
+  {
+    "id": "proc-hyperv",
+    "category": "Architecture (Avancé)",
+    "title": "Créer une VM Hyper-V en script",
+    "difficulty": "Avancé",
+    "description": "Scriptez la création complète d'une machine virtuelle sous Hyper-V (Génération 2) avec attribution de RAM dynamique et d'un disque dur virtuel.",
+    "steps": [
+      {
+        "title": "1. Créer la VM de base",
+        "text": "Utilisez New-VM pour créer la coquille de la machine, spécifiez la Génération 2 (UEFI) et le commutateur virtuel.",
+        "command": "New-VM -Name \"SRV-APP-01\" -MemoryStartupBytes 2GB -Generation 2 -SwitchName \"LAN_Virtuel\""
+      },
+      {
+        "title": "2. Gérer la mémoire (RAM)",
+        "text": "Activez la mémoire dynamique pour que la VM puisse adapter sa consommation selon ses besoins (entre 1 et 4 Go).",
+        "command": "Set-VMMemory -VMName \"SRV-APP-01\" -DynamicMemoryEnabled $true -MinimumBytes 1GB -MaximumBytes 4GB"
+      },
+      {
+        "title": "3. Créer et attacher un disque",
+        "text": "Créez un nouveau disque dur virtuel (VHDX) dynamique de 50 Go et attachez-le au contrôleur SCSI de la VM.",
+        "command": "$path = \"C:\\Hyper-V\\VHD\\SRV-APP-01.vhdx\"\nNew-VHD -Path $path -SizeBytes 50GB -Dynamic\nAdd-VMHardDiskDrive -VMName \"SRV-APP-01\" -Path $path -ControllerType SCSI -ControllerNumber 0"
+      },
+      {
+        "title": "4. Démarrer la VM",
+        "text": "Démarrez la machine pour lancer l'installation de l'OS (en supposant qu'une ISO a été montée sur le lecteur DVD virtuel).",
+        "command": "Start-VM -Name \"SRV-APP-01\""
+      }
+    ]
+  },
+  {
+    "id": "proc-scheduled-task",
+    "category": "Automatisation",
+    "title": "Créer une tâche planifiée",
+    "difficulty": "Intermédiaire",
+    "description": "Remplacez la console 'Planificateur de tâches' (Task Scheduler) ou le Cron Linux par ces cmdlets pour automatiser le lancement de vos scripts.",
+    "steps": [
+      {
+        "title": "1. Définir le déclencheur (Trigger)",
+        "text": "Indiquez à quel moment la tâche doit s'exécuter. Ici, tous les jours à 3h00 du matin.",
+        "command": "$trigger = New-ScheduledTaskTrigger -Daily -At 3am"
+      },
+      {
+        "title": "2. Définir l'action",
+        "text": "Indiquez quel programme lancer. Pour un script PowerShell, le programme est 'powershell.exe' et le script est passé en argument.",
+        "command": "$action = New-ScheduledTaskAction -Execute \"powershell.exe\" -Argument \"-NoProfile -ExecutionPolicy Bypass -File C:\\Scripts\\Backup.ps1\""
+      },
+      {
+        "title": "3. Enregistrer la tâche",
+        "text": "Combinez le déclencheur et l'action pour créer la tâche dans le système. Spécifiez l'utilisateur 'SYSTEM' pour qu'elle s'exécute en arrière-plan sans session ouverte.",
+        "command": "Register-ScheduledTask -TaskName \"BackupQuotidien\" -Trigger $trigger -Action $action -User \"NT AUTHORITY\\SYSTEM\" -RunLevel Highest"
+      }
+    ]
+  },
+  {
+    "id": "proc-smb-share",
+    "category": "Stockage & Partage",
+    "title": "Créer un partage réseau (SMB)",
+    "difficulty": "Facile",
+    "description": "Partagez un dossier local sur le réseau avec le protocole SMB (le standard Windows) en définissant les autorisations d'accès.",
+    "steps": [
+      {
+        "title": "1. Créer le dossier local",
+        "text": "Créez le dossier physique sur le disque du serveur.",
+        "command": "New-Item -Path \"C:\\Partages\\Projet_X\" -ItemType Directory"
+      },
+      {
+        "title": "2. Créer le partage SMB",
+        "text": "Utilisez New-SmbShare pour exposer le dossier sur le réseau. Par défaut, les utilisateurs ont un accès en lecture.",
+        "command": "New-SmbShare -Name \"Projet_X\" -Path \"C:\\Partages\\Projet_X\" -Description \"Dossier partagé du Projet X\""
+      },
+      {
+        "title": "3. Attribuer les droits de partage",
+        "text": "Donnez les droits de modification à un groupe spécifique (ex: les développeurs). Note : Il faudra également configurer les droits NTFS (Set-Acl) pour une sécurité complète.",
+        "command": "Grant-SmbShareAccess -Name \"Projet_X\" -AccountName \"DOMAINE\\Grp_Devs\" -AccessRight Change -Force"
+      }
+    ]
+  },
+  {
+    "id": "proc-winget",
+    "category": "Administration (Avancé)",
+    "title": "Installer des logiciels avec Winget",
+    "difficulty": "Facile",
+    "description": "Oubliez les installations manuelles avec 'Suivant, Suivant, Terminer'. Winget est le gestionnaire de paquets officiel de Microsoft (équivalent de apt sous Linux).",
+    "steps": [
+      {
+        "title": "1. Rechercher un logiciel",
+        "text": "Cherchez le paquet exact (ID) du logiciel que vous souhaitez installer dans les dépôts Microsoft.",
+        "command": "winget search \"Google Chrome\""
+      },
+      {
+        "title": "2. Installer silencieusement",
+        "text": "Lancez l'installation en forçant l'acceptation des licences et en masquant l'interface graphique (--silent).",
+        "command": "winget install -e --id Google.Chrome --accept-source-agreements --accept-package-agreements --silent"
+      },
+      {
+        "title": "3. Mettre à jour les logiciels",
+        "text": "Winget permet également de mettre à jour toutes les applications installées sur la machine en une seule commande.",
+        "command": "winget upgrade --all --silent"
+      }
+    ]
+  },
+  {
+    "id": "proc-reset-pwd",
+    "category": "Active Directory",
+    "title": "Réinitialiser un mot de passe (AD)",
+    "difficulty": "Facile",
+    "description": "Une tâche très fréquente au Helpdesk : un utilisateur a oublié son mot de passe ou a bloqué son compte suite à trop de tentatives erronées.",
+    "steps": [
+      {
+        "title": "1. Créer le SecureString",
+        "text": "Générez un mot de passe temporaire chiffré. C'est obligatoire pour modifier les mots de passe dans l'Active Directory.",
+        "command": "$mdp = ConvertTo-SecureString \"ChangeMoi123!\" -AsPlainText -Force"
+      },
+      {
+        "title": "2. Réinitialiser et déverrouiller",
+        "text": "Modifiez le mot de passe du compte. Si le compte a été verrouillé (lockout), l'option '-Unlock' résout le problème.",
+        "command": "Set-ADAccountPassword -Identity \"jdupont\" -NewPassword $mdp -Reset -Unlock"
+      },
+      {
+        "title": "3. Forcer le changement au login",
+        "text": "Pour des raisons de sécurité, forcez l'utilisateur à créer son propre mot de passe dès sa prochaine connexion.",
+        "command": "Set-ADUser -Identity \"jdupont\" -ChangePasswordAtLogon $true"
+      }
+    ]
+  },
+  {
+    "id": "proc-dhcp-ps",
+    "category": "Réseau & Distant",
+    "title": "Créer une étendue DHCP (Windows Server)",
+    "difficulty": "Intermédiaire",
+    "description": "Configurez un serveur DHCP sous Windows Server entièrement en PowerShell pour distribuer des IPs à vos clients.",
+    "steps": [
+      {
+        "title": "1. Créer l'étendue (Scope)",
+        "text": "Définissez la plage d'adresses IP disponibles (StartRange / EndRange) ainsi que le masque de sous-réseau.",
+        "command": "Add-DhcpServerv4Scope -Name \"LAN_Employes\" -StartRange 192.168.1.100 -EndRange 192.168.1.200 -SubnetMask 255.255.255.0 -State Active"
+      },
+      {
+        "title": "2. Configurer les options (Passerelle, DNS)",
+        "text": "Distribuez l'adresse de la box (Routeur) et des serveurs DNS avec cette étendue. Note : OptionId 3 = Routeur, OptionId 6 = DNS.",
+        "command": "Set-DhcpServerv4OptionValue -ScopeId 192.168.1.0 -Router 192.168.1.1 -DnsServer 8.8.8.8, 1.1.1.1"
+      },
+      {
+        "title": "3. Ajouter une exclusion",
+        "text": "Si vous avez une imprimante statique dans la plage distribuée, créez une exclusion pour éviter que le DHCP ne donne cette IP à un autre appareil.",
+        "command": "Add-DhcpServerv4ExclusionRange -ScopeId 192.168.1.0 -StartRange 192.168.1.150 -EndRange 192.168.1.155"
+      }
+    ]
+  },
+  {
+    "id": "proc-html-report",
+    "category": "Automatisation",
+    "title": "Générer un rapport d'inventaire HTML",
+    "difficulty": "Intermédiaire",
+    "description": "PowerShell excelle dans l'extraction de données. Utilisez ConvertTo-Html pour transformer n'importe quel objet système en une page web présentable, idéale pour envoyer un rapport par email à votre hiérarchie.",
+    "steps": [
+      {
+        "title": "1. Récolter les données",
+        "text": "Récupérez les informations souhaitées. Par exemple, isolons les 10 processus consommant le plus de mémoire RAM.",
+        "command": "$data = Get-Process | Sort-Object WorkingSet -Descending | Select-Object -First 10 Name, CPU, WorkingSet"
+      },
+      {
+        "title": "2. Définir le style CSS",
+        "text": "Créez une chaîne de caractères contenant du code CSS basique pour embellir le tableau généré.",
+        "command": "$css = \"<style>table{border-collapse:collapse;width:50%;font-family:sans-serif;} th,td{border:1px solid #ddd;padding:8px;} th{background-color:#06b6d4;color:white;}</style>\""
+      },
+      {
+        "title": "3. Convertir et Sauvegarder",
+        "text": "Passez les données dans ConvertTo-Html en injectant votre CSS, puis sauvegardez le tout dans un fichier sur votre disque.",
+        "command": "$data | ConvertTo-Html -Head $css -PreContent \"<h2>Top 10 Processus gourmands en RAM</h2>\" | Out-File -Path \"C:\\Rapport.html\""
+      }
+    ]
+  }
+]

@@ -1,0 +1,218 @@
+[
+  {
+    "id": "ps-exec-policy",
+    "category": "1. Sécurité & Scripts",
+    "title": "La Politique d'Exécution (Execution Policy)",
+    "description": "Par défaut, par mesure de sécurité (pour éviter l'exécution accidentelle de malwares), Windows empêche l'exécution de tout script PowerShell (.ps1). C'est la première erreur que rencontrent les débutants.\nIl faut modifier cette politique, généralement au niveau de la session locale, pour autoriser les scripts créés localement (RemoteSigned) ou tous les scripts (Unrestricted - déconseillé en production).",
+    "commands": [
+      { "code": "Get-ExecutionPolicy", "note": "Vérifie la politique actuelle (souvent 'Restricted')" },
+      { "code": "Set-ExecutionPolicy RemoteSigned -Scope CurrentUser", "note": "Autorise l'exécution pour l'utilisateur actuel" },
+      { "code": "Set-ExecutionPolicy Bypass -Scope Process -Force", "note": "Astuce : Contourne la sécurité juste pour la fenêtre ouverte" }
+    ],
+    "alert": "L'Execution Policy N'EST PAS un système de sécurité inviolable, c'est un 'garde-fou' pour les utilisateurs. Les attaquants savent facilement le contourner. Ne comptez pas dessus pour protéger un serveur.",
+    "alertType": "warning"
+  },
+  {
+    "id": "ps-objects",
+    "category": "2. Cœur du Système",
+    "title": "Le paradigme Objet (vs Texte)",
+    "description": "En Bash, 'ls' retourne du texte. En PowerShell, 'Get-ChildItem' retourne un tableau d'objets .NET de type [FileInfo] ou [DirectoryInfo]. Chaque objet possède des Propriétés (ex: Nom, Taille, Date) et des Méthodes (ex: Delete(), MoveTo()).\nPour découvrir les propriétés cachées d'une commande, on utilise la cmdlet magique 'Get-Member' via un pipeline.",
+    "commands": [
+      { "code": "Get-Service | Get-Member", "note": "Révèle toutes les propriétés et méthodes d'un service" },
+      { "code": "$fichier = Get-Item C:\\test.txt\n$fichier.Delete()", "note": "Exemple d'utilisation d'une méthode d'objet" }
+    ],
+    "alert": "Le pipeline (|) en PowerShell ne transfère pas de texte, il transfère des objets entiers. C'est ce qui permet d'enchaîner des opérations complexes sans jamais avoir besoin d'utiliser des commandes comme 'grep' ou 'awk'.",
+    "alertType": "info"
+  },
+  {
+    "id": "ps-where-select",
+    "category": "3. Traitement de données",
+    "title": "Le filtrage (Where) et Formatage (Select)",
+    "description": "Pour traiter la donnée renvoyée par une commande, on utilise le pipeline (|).\n- Where-Object (alias '?' ou 'where') filtre les objets selon une condition (comme 'grep').\n- Select-Object (alias 'select') permet de ne conserver que certaines colonnes d'un objet (comme 'awk').\n\nDans un pipeline, '$_' (ou '$PSItem') représente l'objet en cours de traitement.",
+    "commands": [
+      { "code": "Get-Process | Where-Object { $_.WorkingSet -gt 1GB }", "note": "Affiche les processus consommant plus de 1 Go de RAM" },
+      { "code": "Get-Service | Select-Object Name, Status", "note": "N'affiche que les colonnes 'Name' et 'Status'" },
+      { "code": "Get-ChildItem | Where-Object Extension -eq '.log'", "note": "Syntaxe simplifiée de Where-Object (sans accolades)" }
+    ]
+  },
+  {
+    "id": "ps-winrm",
+    "category": "4. Réseau & Distant",
+    "title": "Administration à distance (WinRM)",
+    "advanced": true,
+    "description": "WinRM (Windows Remote Management) est le standard Microsoft équivalent à SSH. Il est activé par défaut sur Windows Server (mais pas sur Windows 10/11 client).\nIl permet d'ouvrir une session interactive (Enter-PSSession) ou d'exécuter des blocs de scripts à distance de manière asynchrone (Invoke-Command).",
+    "commands": [
+      { "code": "Enable-PSRemoting -Force", "note": "Active le service WinRM sur la machine cible" },
+      { "code": "Enter-PSSession -ComputerName SRV-AD-01", "note": "Ouvre un shell interactif distant (comme 'ssh user@ip')" },
+      { "code": "Exit-PSSession", "note": "Quitte la session distante et revient au PC local" }
+    ]
+  },
+  {
+    "id": "ps-ad-module",
+    "category": "5. Active Directory",
+    "title": "Le module Active Directory",
+    "description": "Les commandes AD (Get-ADUser, New-ADUser...) ne sont pas présentes par défaut dans PowerShell. Il faut installer la fonctionnalité RSAT (Remote Server Administration Tools) pour y avoir accès. Sur un Contrôleur de Domaine, elles sont installées d'office.",
+    "commands": [
+      { "code": "Get-WindowsCapability -Name RSAT.ActiveDirectory.DS-LDS.Tools* -Online | Add-WindowsCapability -Online", "note": "Installe le module AD sur un Windows 10/11 ou Server (si non-DC)" },
+      { "code": "Import-Module ActiveDirectory", "note": "Charge explicitement le module dans la session (souvent inutile dans les versions récentes de PS)" }
+    ]
+  },
+  {
+    "id": "ps-variables",
+    "category": "1. Sécurité & Scripts",
+    "title": "Variables, Tableaux et HashTables",
+    "description": "En PowerShell, toutes les variables commencent par le préfixe '$'. Bien qu'il tente de deviner le type de donnée dynamiquement, le typage fort (.NET) est toujours présent sous le capot (ex: [string], [int], [datetime]).\n\nLes listes (Tableaux/Arrays) s'écrivent avec '@()' et les dictionnaires Clés/Valeurs (Tables de hachage) s'écrivent avec '@{}'.",
+    "commands": [
+      { "code": "$serveur = \"SRV-WEB-01\"\n[int]$port = 80", "note": "Déclaration de variables simples" },
+      { "code": "$adresses = @(\"192.168.1.10\", \"192.168.1.20\")\n$adresses[0]", "note": "Création d'un tableau et accès au premier élément" },
+      { "code": "$config = @{ IP=\"10.0.0.1\"; Role=\"DNS\" }\n$config.Role", "note": "Création d'une table de hachage et accès à la valeur 'Role'" }
+    ]
+  },
+  {
+    "id": "ps-loops",
+    "category": "3. Traitement de données",
+    "title": "L'automatisation via les Boucles",
+    "description": "Il existe deux façons principales de boucler en PowerShell :\n\n- La boucle 'foreach' (classique) : Plus performante, elle nécessite que tous les objets soient chargés en RAM avant de commencer.\n- La cmdlet 'ForEach-Object' (alias '%') : Utilisée dans le pipeline. Elle traite les objets un par un dès qu'ils arrivent, consommant moins de mémoire pour les très grosses opérations (mais plus lente globalement).",
+    "commands": [
+      { "code": "foreach ($fichier in $listeFichiers) {\n    Write-Host \"Traitement de $($fichier.Name)\"\n}", "note": "La boucle foreach classique (orientée script)" },
+      { "code": "Get-ChildItem *.log | ForEach-Object { Remove-Item $_.FullName }", "note": "La boucle via le pipeline (orientée ligne de commande)" }
+    ]
+  },
+  {
+    "id": "ps-error-handling",
+    "category": "1. Sécurité & Scripts",
+    "title": "Gestion des Erreurs (Try / Catch)",
+    "advanced": true,
+    "description": "Par défaut, une erreur n'arrête pas un script PowerShell (contrairement au mode 'set -e' de Bash). Pour capturer une erreur et la traiter proprement, il faut utiliser un bloc Try/Catch.\nAttention : le Catch ne capture que les erreurs 'bloquantes' (Terminating Errors). Pour transformer une erreur non-bloquante (comme 'fichier introuvable') en erreur bloquante, il faut utiliser l'argument '-ErrorAction Stop'.",
+    "commands": [
+      { "code": "Try {\n    Stop-Process -Name processinconnu -ErrorAction Stop\n}\nCatch {\n    Write-Warning \"Impossible d'arrêter le processus : $_\"\n}", "note": "Le $_ dans le bloc Catch contient l'objet d'erreur exact généré par le système." }
+    ]
+  },
+  {
+    "id": "ps-drives",
+    "category": "2. Cœur du Système",
+    "title": "Les PSDrives (Lecteurs Virtuels)",
+    "description": "La grande force de PowerShell est de traiter la base de registre (Regedit), les certificats ou les variables d'environnement exactement comme s'il s'agissait de disques durs classiques (C:, D:).\nVous pouvez utiliser 'cd', 'ls' et 'mkdir' (alias de Set-Location, Get-ChildItem, New-Item) directement dans la base de registre !",
+    "commands": [
+      { "code": "Get-PSDrive", "note": "Liste tous les lecteurs virtuels disponibles (HKLM, Env, Cert...)" },
+      { "code": "Set-Location HKLM:\\SOFTWARE\\Microsoft\\Windows\nGet-ChildItem", "note": "Se déplace et liste les clés de registre comme des dossiers" },
+      { "code": "Get-ChildItem Env:", "note": "Affiche toutes les variables d'environnement du système (ex: PATH)" }
+    ],
+    "alert": "Modifiez la base de registre avec prudence. Utilisez 'Get-ItemProperty' et 'Set-ItemProperty' pour lire et écrire les valeurs à l'intérieur des clés.",
+    "alertType": "warning"
+  },
+  {
+    "id": "ps-profile",
+    "category": "2. Cœur du Système",
+    "title": "Personnaliser sa session ($PROFILE)",
+    "description": "Le Profil PowerShell est l'équivalent du fichier '~/.bashrc' sous Linux. C'est un script PowerShell qui s'exécute automatiquement à chaque fois que vous ouvrez une console. C'est l'endroit parfait pour définir vos propres Alias, charger des modules spécifiques ou personnaliser votre prompt.",
+    "commands": [
+      { "code": "Test-Path $PROFILE", "note": "Vérifie si vous avez déjà un fichier profil créé (True/False)" },
+      { "code": "New-Item -Path $PROFILE -ItemType File -Force", "note": "Crée le fichier profil (s'il n'existait pas)" },
+      { "code": "notepad $PROFILE", "note": "Ouvre votre profil pour le modifier" }
+    ]
+  },
+  {
+    "id": "ps-functions",
+    "category": "1. Sécurité & Scripts",
+    "title": "Créer ses propres Fonctions",
+    "description": "Si vous utilisez souvent un même bloc de code, enfermez-le dans une fonction. C'est l'équivalent de l'alias avancé. Les fonctions PowerShell professionnelles intègrent des paramètres (param) typés et obligatoires pour éviter les erreurs d'exécution.",
+    "commands": [
+      { "code": "function Get-MonPC {\n    param(\n        [Parameter(Mandatory=$true)]\n        [string]$IP\n    )\n    Test-NetConnection -ComputerName $IP\n}", "note": "Déclaration d'une fonction avec un paramètre obligatoire" },
+      { "code": "Get-MonPC -IP '8.8.8.8'", "note": "Utilisation de la fonction créée" }
+    ]
+  },
+  {
+    "id": "ps-splatting",
+    "category": "1. Sécurité & Scripts",
+    "title": "Le Splatting (Table de hachage)",
+    "advanced": true,
+    "description": "Le Splatting est une technique PowerShell permettant de passer des paramètres à une commande en utilisant une table de hachage (@{}). Cela rend les scripts contenant des commandes très longues (comme New-ADUser ou Send-MailMessage) beaucoup plus lisibles et maintenables.",
+    "commands": [
+      { "code": "$params = @{\n    Name = \"Jean Dupont\"\n    Department = \"IT\"\n    Title = \"SysAdmin\"\n}\nNew-ADUser @params", "note": "Notez l'utilisation de '@params' au lieu de '$params' lors de l'appel de la commande." }
+    ],
+    "alert": "L'erreur classique est d'utiliser un '$' au moment de passer la variable splattée. Il faut absolument utiliser l'arobase '@' lors de l'appel pour dire à PowerShell 'déplie ce dictionnaire en arguments'.",
+    "alertType": "warning"
+  },
+  {
+    "id": "ps-formatting",
+    "category": "3. Traitement de données",
+    "title": "Formatage (Table vs List)",
+    "description": "Par défaut, si un objet a moins de 5 propriétés, PowerShell l'affiche sous forme de tableau (Table). S'il en a plus, il l'affiche sous forme de liste (List). Vous pouvez forcer le formatage visuel en fin de pipeline. Attention : Format-* détruit l'objet .NET et le transforme en simple texte pour l'écran.",
+    "commands": [
+      { "code": "Get-Process | Format-Table Name, CPU -AutoSize", "note": "Force l'affichage en tableau et ajuste la largeur des colonnes" },
+      { "code": "Get-Service wuauserv | Format-List *", "note": "L'astuce en or : Affiche TOUTES les propriétés sous forme de liste" }
+    ],
+    "alert": "N'utilisez jamais Format-Table ou Format-List AVANT un Export-Csv, un Sort-Object ou un Where-Object. Ces cmdlets de formatage doivent toujours être les toutes dernières commandes de votre pipeline.",
+    "alertType": "warning"
+  },
+  {
+    "id": "ps-modules",
+    "category": "2. Cœur du Système",
+    "title": "Les Modules et la PSGallery",
+    "description": "PowerShell est modulaire. Vous pouvez étendre ses capacités en téléchargeant des modules depuis la PowerShell Gallery (le dépôt officiel Microsoft). Un module est un ensemble de scripts, cmdlets et fonctions (ex: VMWare, AWS, ou AzureAD).",
+    "commands": [
+      { "code": "Find-Module -Name *ActiveDirectory*", "note": "Recherche un module dans la Gallery" },
+      { "code": "Install-Module -Name ImportExcel -Force", "note": "Télécharge et installe le module" },
+      { "code": "Get-Module -ListAvailable", "note": "Liste les modules installés sur le PC" }
+    ]
+  },
+  {
+    "id": "ps-jobs",
+    "category": "6. Automatisation",
+    "title": "Les Tâches en arrière-plan (Jobs)",
+    "advanced": true,
+    "description": "Si vous lancez un script très long (ex: un ping sur 500 machines), votre console est bloquée. Les 'Jobs' permettent de lancer une tâche en tâche de fond de manière asynchrone, et de récupérer le résultat plus tard, libérant ainsi votre terminal.",
+    "commands": [
+      { "code": "Start-Job -ScriptBlock { Get-ChildItem C:\\ -Recurse }", "note": "Lance la recherche longue en arrière-plan" },
+      { "code": "Get-Job", "note": "Vérifie l'état des tâches (Running, Completed)" },
+      { "code": "Receive-Job -Id 1 -Keep", "note": "Récupère et affiche les résultats de la tâche n°1" }
+    ]
+  },
+  {
+    "id": "ps-cim-wmi",
+    "category": "2. Cœur du Système",
+    "title": "WMI vs CIM (Inventaire matériel)",
+    "advanced": true,
+    "description": "WMI (Windows Management Instrumentation) est la technologie historique pour interroger le matériel d'un PC Windows. Aujourd'hui, les cmdlets '*-WmiObject' sont dépréciées et remplacées par les cmdlets '*-CimInstance', qui sont plus rapides, standardisées et utilisent WinRM (au lieu de RPC/DCOM) pour les connexions à distance.",
+    "commands": [
+      { "code": "Get-CimInstance -ClassName Win32_OperatingSystem", "note": "Récupère les infos de l'OS (RAM totale, version)" },
+      { "code": "Get-CimInstance -ClassName Win32_LogicalDisk", "note": "Liste les partitions et l'espace libre" }
+    ]
+  },
+  {
+    "id": "ps-strings",
+    "category": "3. Traitement de données",
+    "title": "Manipulation de Chaînes (Strings)",
+    "description": "Les chaînes de caractères (Strings) en PowerShell sont des objets complets dotés de puissantes méthodes intégrées. Elles permettent de découper, remplacer ou formater du texte sans avoir besoin de commandes complexes comme 'sed' sous Linux.",
+    "commands": [
+      { "code": "$texte = \"Bonjour le monde\"\n$texte.ToUpper()", "note": "Convertit tout en majuscules (BONJOUR LE MONDE)" },
+      { "code": "$texte.Replace(\"monde\", \"jury\")", "note": "Substitue un mot (Bonjour le jury)" },
+      { "code": "\"192.168.1.10\".Split('.')[3]", "note": "Découpe l'IP aux points, et récupère le 4ème élément (10)" }
+    ]
+  },
+  {
+    "id": "ps-operators",
+    "category": "3. Traitement de données",
+    "title": "Opérateurs Avancés (Match, In, Contains)",
+    "description": "Au-delà des classiques -eq (égal) et -ne (différent), PowerShell brille par ses opérateurs de comparaison pensés pour les tableaux et les expressions régulières (Regex).",
+    "commands": [
+      { "code": "\"Serveur-Prod\" -match \"Prod\"", "note": "Retourne True si la chaîne contient le mot (Regex)" },
+      { "code": "$liste = @('PC1', 'PC2', 'PC3')\n'PC2' -in $liste", "note": "Retourne True si l'élément se trouve dans le tableau" },
+      { "code": "$liste -contains 'PC2'", "note": "Exactement comme -in, mais la logique est inversée (Tableau -contains Élément)" }
+    ]
+  },
+  {
+    "id": "ps-credentials",
+    "category": "1. Sécurité & Scripts",
+    "title": "Gestion des Identifiants (PSCredential)",
+    "advanced": true,
+    "description": "L'automatisation requiert souvent de s'authentifier à d'autres systèmes (AD, vCenter, M365). Il est interdit d'écrire des mots de passe en clair dans un script. On utilise des objets 'PSCredential' qui encapsulent un nom d'utilisateur et un mot de passe sécurisé (SecureString).\n\nPour les scripts automatisés (sans interaction), on exporte le mot de passe chiffré dans un fichier avec 'Export-Clixml'. L'API Windows garantit que seul l'utilisateur et la machine qui l'ont chiffré pourront le déchiffrer.",
+    "commands": [
+      { "code": "$cred = Get-Credential", "note": "Ouvre une boîte de dialogue demandant le login et le mot de passe." },
+      { "code": "$cred.Password | Export-Clixml -Path 'C:\\secret.xml'", "note": "Sauvegarde le mot de passe chiffré dans un fichier système." }
+    ],
+    "alert": "Si vous déplacez le script et le fichier 'secret.xml' sur un autre serveur, la tâche planifiée échouera car l'API de déchiffrement est propre au serveur d'origine.",
+    "alertType": "warning"
+  }
+]

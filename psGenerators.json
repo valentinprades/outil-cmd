@@ -1,0 +1,52 @@
+[
+  {
+    "id": "gen-tasks",
+    "title": "Tâches Planifiées (Task Scheduler)",
+    "description": "Générez les commandes pour exécuter automatiquement un script à une fréquence donnée.",
+    "icon": "clock",
+    "fields": [
+      { "name": "taskName", "label": "Nom de la tâche", "type": "text", "placeholder": "Ex: Backup_Quotidien" },
+      { "name": "scriptPath", "label": "Chemin du script (.ps1)", "type": "text", "placeholder": "C:\\Scripts\\mon_script.ps1" },
+      { "name": "triggerType", "label": "Fréquence d'exécution", "type": "select", "options": [
+          { "value": "Daily", "text": "Tous les jours" },
+          { "value": "AtStartup", "text": "Au démarrage du serveur" },
+          { "value": "AtLogon", "text": "À l'ouverture de session" }
+        ]
+      },
+      { "name": "runAsSystem", "label": "Exécuter en tant que SYSTEM (Arrière-plan)", "type": "checkbox", "default": true }
+    ],
+    "templates": {
+      "oneliner": "$action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument '-ExecutionPolicy Bypass -WindowStyle Hidden -File \"{{scriptPath}}\"'; $trigger = New-ScheduledTaskTrigger -{{triggerType}} -At 3am; Register-ScheduledTask -TaskName '{{taskName}}' -Action $action -Trigger $trigger {{#if runAsSystem}}-User 'NT AUTHORITY\\SYSTEM' -RunLevel Highest{{/if}} -Force",
+      "ps1": "<#\n.SYNOPSIS\n    Création de la tâche planifiée : {{taskName}}\n.DESCRIPTION\n    Ce script déploie une tâche exécutant {{scriptPath}} avec le déclencheur {{triggerType}}.\n#>\n\n$TaskName = \"{{taskName}}\"\n$ScriptPath = \"{{scriptPath}}\"\n\nTry {\n    Write-Host \"[+] Création de l'action...\" -ForegroundColor Cyan\n    $action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument \"-ExecutionPolicy Bypass -WindowStyle Hidden -File `\"$ScriptPath`\"\"\n    \n    Write-Host \"[+] Création du déclencheur ({{triggerType}})...\" -ForegroundColor Cyan\n    $trigger = New-ScheduledTaskTrigger -{{triggerType}} -At 03:00AM\n    \n    Write-Host \"[+] Enregistrement de la tâche...\" -ForegroundColor Cyan\n    Register-ScheduledTask -TaskName $TaskName -Action $action -Trigger $trigger {{#if runAsSystem}}-User 'NT AUTHORITY\\SYSTEM' -RunLevel Highest{{/if}} -Force | Out-Null\n    \n    Write-Host \"[OK] La tâche '$TaskName' a été créée avec succès !\" -ForegroundColor Green\n}\nCatch {\n    Write-Error \"[ERREUR] Impossible de créer la tâche : $_\"\n}"
+    }
+  },
+  {
+    "id": "gen-firewall",
+    "title": "Règles Pare-feu (Windows Defender)",
+    "description": "Ouvrez ou bloquez un port spécifique dans le pare-feu de Windows.",
+    "icon": "shield",
+    "fields": [
+      { "name": "ruleName", "label": "Nom de la règle", "type": "text", "placeholder": "Ex: Autoriser_Serveur_Web" },
+      { "name": "port", "label": "Numéro du port", "type": "number", "placeholder": "Ex: 443" },
+      { "name": "protocol", "label": "Protocole", "type": "select", "options": [
+          { "value": "TCP", "text": "TCP" },
+          { "value": "UDP", "text": "UDP" }
+        ]
+      },
+      { "name": "action", "label": "Action", "type": "select", "options": [
+          { "value": "Allow", "text": "Autoriser la connexion" },
+          { "value": "Block", "text": "Bloquer la connexion" }
+        ]
+      },
+      { "name": "direction", "label": "Direction du trafic", "type": "select", "options": [
+          { "value": "Inbound", "text": "Entrant (Inbound)" },
+          { "value": "Outbound", "text": "Sortant (Outbound)" }
+        ]
+      }
+    ],
+    "templates": {
+      "oneliner": "New-NetFirewallRule -DisplayName '{{ruleName}}' -Direction {{direction}} -LocalPort {{port}} -Protocol {{protocol}} -Action {{action}} -Profile Any",
+      "ps1": "<#\n.SYNOPSIS\n    Configuration de la règle de Pare-feu : {{ruleName}}\n#>\n\nTry {\n    $params = @{\n        DisplayName = \"{{ruleName}}\"\n        Direction   = \"{{direction}}\"\n        LocalPort   = {{port}}\n        Protocol    = \"{{protocol}}\"\n        Action      = \"{{action}}\"\n        Profile     = \"Any\"\n        ErrorAction = \"Stop\"\n    }\n    \n    Write-Host \"[+] Création de la règle de pare-feu sur le port {{port}}/{{protocol}}...\" -ForegroundColor Cyan\n    New-NetFirewallRule @params | Out-Null\n    \n    Write-Host \"[OK] Règle appliquée avec succès !\" -ForegroundColor Green\n}\nCatch {\n    Write-Error \"[ERREUR] Échec de la configuration du pare-feu : $_\"\n}"
+    }
+  }
+]
